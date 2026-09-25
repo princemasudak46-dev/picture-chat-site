@@ -57,10 +57,35 @@
       border-radius: 10px;
       font-size: 16px;
       cursor: pointer;
+      margin-top: 10px;
     }
 
     button:hover {
       background: #006fa6;
+    }
+
+    #preview {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-top: 15px;
+      display: none;
+    }
+
+    #posts {
+      margin-top: 20px;
+    }
+
+    .post {
+      background: white;
+      padding: 15px;
+      margin-top: 15px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    }
+
+    .post img {
+      width: 100%;
+      border-radius: 10px;
     }
 
     .footer {
@@ -79,54 +104,88 @@
   </div>
 
   <div class="container">
+
     <div class="card">
       <h1>স্বাগতম ❤️</h1>
 
       <p>
-        এখানে আপনি সহজেই ছবি এবং মেসেজ শেয়ার করতে পারবেন।
+        এখানে আপনি সহজেই ছবি শেয়ার করতে পারবেন।
       </p>
 
-      <button onclick="showMessage()">
-        শুরু করুন
+      <input type="file" id="photoInput" accept="image/*">
+
+      <br>
+
+      <img id="preview" alt="ছবির প্রিভিউ">
+
+      <br>
+
+      <button id="postButton">
+        📤 পোস্ট করুন
       </button>
 
       <p id="message"></p>
     </div>
 
+    <div id="posts"></div>
+
     <div class="footer">
       © 2026 Picture Chat
     </div>
+
   </div>
 
   <script>
-    function showMessage() {
-      document.getElementById("message").innerText =
-        "🎉 স্বাগতম! ওয়েবসাইটটি সফলভাবে কাজ করছে।";
-    }
+    const photoInput = document.getElementById("photoInput");
+    const preview = document.getElementById("preview");
+    const postButton = document.getElementById("postButton");
+    const posts = document.getElementById("posts");
+    const message = document.getElementById("message");
+
+    let selectedImage = "";
+
+    photoInput.addEventListener("change", function () {
+      const file = this.files[0];
+
+      if (!file) {
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onload = function (event) {
+        selectedImage = event.target.result;
+
+        preview.src = selectedImage;
+        preview.style.display = "block";
+        message.innerText = "✅ ছবি প্রস্তুত। এখন পোস্ট করুন।";
+      };
+
+      reader.readAsDataURL(file);
+    });
+
+    postButton.addEventListener("click", function () {
+      if (!selectedImage) {
+        message.innerText = "⚠️ আগে একটি ছবি নির্বাচন করুন।";
+        return;
+      }
+
+      const post = document.createElement("div");
+      post.className = "post";
+
+      const image = document.createElement("img");
+      image.src = selectedImage;
+
+      post.appendChild(image);
+      posts.prepend(post);
+
+      message.innerText = "🎉 ছবি সফলভাবে পোস্ট হয়েছে!";
+
+      photoInput.value = "";
+      selectedImage = "";
+      preview.style.display = "none";
+    });
   </script>
-<div style="margin-top:20px;">
-  <input type="file" id="photoInput" accept="image/*">
-  <br><br>
-  <img id="preview" style="max-width:100%; border-radius:12px; display:none;">
-</div>
 
-  <button id="postButton">📤 পোস্ট করুন</button>
-<script>
-  const photoInput = document.getElementById("photoInput");
-  const preview = document.getElementById("preview");
-const postButton = document.getElementById("postButton");
-  photoInput.addEventListener("change", function () {
-    const file = this.files[0];
-
-    if (file) {
-      preview.src = URL.createObjectURL(file);
-      preview.style.display = "block";
-    }
-  });
-  postButton.addEventListener("click", function () {
-  preview.style.display = "block";
-});
-</script>
-  
 </body>
 </html>
