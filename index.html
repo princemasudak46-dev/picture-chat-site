@@ -104,6 +104,24 @@
         "🎉 স্বাগতম! ওয়েবসাইটটি সফলভাবে কাজ করছে।";
     }
   </script>
+<div style="margin-top:20px;">
+  <input type="file" id="photoInput" accept="image/*">
+  <br><br>
+  <img id="preview" style="max-width:100%; border-radius:12px; display:none;">
+</div>
 
+<script>
+  const photoInput = document.getElementById("photoInput");
+  const preview = document.getElementById("preview");
+
+  photoInput.addEventListener("change", function () {
+    const file = this.files[0];
+
+    if (file) {
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = "block";
+    }
+  });
+</script>
 </body>
 </html>
