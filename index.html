@@ -4,11 +4,106 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Picture Chat</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      color: #222;
+    }
+
+    .header {
+      background: #0088cc;
+      color: white;
+      padding: 18px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    p {
+      color: #666;
+      line-height: 1.6;
+    }
+
+    button {
+      background: #0088cc;
+      color: white;
+      border: none;
+      padding: 13px 25px;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #006fa6;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      color: #888;
+      font-size: 14px;
+    }
+  </style>
 </head>
+
 <body>
 
-  <h1>🖼️ Picture Chat</h1>
-  <p>আমাদের ওয়েবসাইটে স্বাগতম</p>
+  <div class="header">
+    📸 Picture Chat
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h1>স্বাগতম ❤️</h1>
+
+      <p>
+        এখানে আপনি সহজেই ছবি এবং মেসেজ শেয়ার করতে পারবেন।
+      </p>
+
+      <button onclick="showMessage()">
+        শুরু করুন
+      </button>
+
+      <p id="message"></p>
+    </div>
+
+    <div class="footer">
+      © 2026 Picture Chat
+    </div>
+  </div>
+
+  <script>
+    function showMessage() {
+      document.getElementById("message").innerText =
+        "🎉 স্বাগতম! ওয়েবসাইটটি সফলভাবে কাজ করছে।";
+    }
+  </script>
 
 </body>
 </html>
