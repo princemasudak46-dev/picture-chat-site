@@ -62,10 +62,12 @@
 
     button:disabled {
       opacity: 0.6;
+      cursor: not-allowed;
     }
 
     #preview {
       max-width: 100%;
+      max-height: 400px;
       border-radius: 12px;
       margin-top: 15px;
       display: none;
@@ -107,17 +109,25 @@
   <div class="container">
 
     <div class="card">
+
       <h1>স্বাগতম ❤️</h1>
 
       <p>
         এখানে আপনি সহজেই ছবি শেয়ার করতে পারবেন।
       </p>
 
-      <input type="file" id="photoInput" accept="image/*">
+      <input
+        type="file"
+        id="photoInput"
+        accept="image/*"
+      >
 
       <br>
 
-      <img id="preview" alt="ছবির প্রিভিউ">
+      <img
+        id="preview"
+        alt="ছবির প্রিভিউ"
+      >
 
       <br>
 
@@ -126,6 +136,7 @@
       </button>
 
       <p id="message"></p>
+
     </div>
 
     <div id="posts"></div>
@@ -138,7 +149,7 @@
 
 
   <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
   <script>
 
@@ -181,10 +192,11 @@
       };
 
       reader.readAsDataURL(file);
+
     });
 
 
-    // Supabase থেকে আগের ছবি দেখানো
+    // Supabase থেকে ছবি দেখানো
     async function loadPosts() {
 
       const { data, error } = await supabase.storage
@@ -209,7 +221,18 @@
       posts.innerHTML = "";
 
 
+      if (!data || data.length === 0) {
+
+        return;
+      }
+
+
       data.forEach(function (file) {
+
+        if (!file.name) {
+          return;
+        }
+
 
         const { data: urlData } =
           supabase.storage
@@ -217,16 +240,20 @@
             .getPublicUrl(file.name);
 
 
-        const post = document.createElement("div");
+        const post =
+          document.createElement("div");
 
         post.className = "post";
 
 
-        const image = document.createElement("img");
+        const image =
+          document.createElement("img");
 
         image.src = urlData.publicUrl;
 
         image.loading = "lazy";
+
+        image.alt = "Shared photo";
 
 
         post.appendChild(image);
@@ -256,14 +283,29 @@
         "⏳ ছবি আপলোড হচ্ছে...";
 
 
+      const safeFileName =
+        selectedFile.name.replace(
+          /[^a-zA-Z0-9._-]/g,
+          "_"
+        );
+
+
       const fileName =
-        Date.now() + "-" + selectedFile.name;
+        Date.now() + "-" + safeFileName;
 
 
       const { error } =
         await supabase.storage
           .from("photos")
-          .upload(fileName, selectedFile);
+          .upload(
+            fileName,
+            selectedFile,
+            {
+              cacheControl: "3600",
+              upsert: false,
+              contentType: selectedFile.type
+            }
+          );
 
 
       if (error) {
@@ -300,7 +342,7 @@
     });
 
 
-    // ওয়েবসাইট খোলার সময় আগের ছবি দেখাবে
+    // ওয়েবসাইট খোলার সময় ছবি দেখাবে
     loadPosts();
 
   </script>
