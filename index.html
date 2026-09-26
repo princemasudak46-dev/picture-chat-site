@@ -104,6 +104,19 @@ button{
   border:1px solid #632626;
 }
 
+.admin-box{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:center;
+}
+
+.admin-status{
+  color:#aaa;
+  font-size:13px;
+}
+
 .preview{
   display:none;
   margin-top:12px;
@@ -117,17 +130,32 @@ button{
   background:#050505;
 }
 
-.admin-box{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  align-items:center;
-  justify-content:center;
+.login-panel{
+  display:none;
+  margin-top:15px;
 }
 
-.admin-status{
+.login-panel input{
+  width:100%;
+  padding:11px;
+  margin-bottom:8px;
+  border-radius:9px;
+  border:1px solid #333;
+  background:#0b0b0b;
+  color:#fff;
+}
+
+.login-submit{
+  width:100%;
+  background:#f5c542;
+  color:#000;
+}
+
+.close-login{
+  width:100%;
+  margin-top:7px;
+  background:#222;
   color:#aaa;
-  font-size:13px;
 }
 
 .posts{
@@ -261,32 +289,11 @@ button{
   padding:25px;
 }
 
-.login-panel{
-  display:none;
-  margin-top:15px;
-}
-
-.login-panel input{
-  width:100%;
-  padding:11px;
-  margin-bottom:8px;
-  border-radius:9px;
-  border:1px solid #333;
-  background:#0b0b0b;
-  color:#fff;
-}
-
-.login-submit{
-  width:100%;
-  background:#f5c542;
-  color:#000;
-}
-
-.close-login{
-  width:100%;
-  margin-top:7px;
-  background:#222;
-  color:#aaa;
+.public-note{
+  text-align:center;
+  color:#888;
+  font-size:13px;
+  padding:5px;
 }
 
 .viewer{
@@ -352,6 +359,7 @@ button{
 }
 
 @media(max-width:600px){
+
   header h1{
     font-size:25px;
   }
@@ -376,34 +384,12 @@ button{
 
 <div class="container">
 
+  <!-- ADMIN PANEL -->
   <div class="card">
 
-    <div class="card-title">📤 ছবি শেয়ার করুন</div>
-
-    <input
-      type="file"
-      id="photoInput"
-      accept="image/*"
-    >
-
-    <div class="preview" id="previewBox">
-      <img id="previewImage" alt="Preview">
+    <div class="card-title">
+      🔐 Admin
     </div>
-
-    <button
-      class="primary-btn"
-      id="postBtn"
-      disabled
-    >
-      📸 পোস্ট করুন
-    </button>
-
-  </div>
-
-
-  <div class="card">
-
-    <div class="card-title">🔐 Admin</div>
 
     <div class="admin-box">
 
@@ -428,11 +414,10 @@ button{
         class="admin-status"
         id="adminStatus"
       >
-        Admin হিসেবে লগইন করা নেই
+        Public Viewer Mode
       </div>
 
     </div>
-
 
     <div
       class="login-panel"
@@ -470,6 +455,53 @@ button{
   </div>
 
 
+  <!-- ADMIN ONLY UPLOAD -->
+  <div
+    class="card"
+    id="uploadCard"
+    style="display:none"
+  >
+
+    <div class="card-title">
+      📤 ছবি শেয়ার করুন
+    </div>
+
+    <input
+      type="file"
+      id="photoInput"
+      accept="image/*"
+    >
+
+    <div
+      class="preview"
+      id="previewBox"
+    >
+      <img
+        id="previewImage"
+        alt="Preview"
+      >
+    </div>
+
+    <button
+      class="primary-btn"
+      id="postBtn"
+      disabled
+    >
+      📸 পোস্ট করুন
+    </button>
+
+  </div>
+
+
+  <div
+    class="public-note"
+    id="publicNote"
+  >
+    👀 ছবি দেখুন • ❤️ Like দিন • 💬 Comment করুন
+  </div>
+
+
+  <!-- POSTS -->
   <div class="card">
 
     <div class="card-title">
@@ -490,6 +522,7 @@ button{
 </div>
 
 
+<!-- IMAGE VIEWER -->
 <div
   class="viewer"
   id="viewer"
@@ -544,19 +577,16 @@ const supabaseClient =
     SUPABASE_KEY
   );
 
-
 const BUCKET = "photos";
 
 const ADMIN_UID =
   "e482b1f1-03fb-4a36-9412-af71f89cb31d";
-
 
 const ADMIN_ACCESS_KEY =
   "picture_chat_admin_access_token";
 
 const ADMIN_REFRESH_KEY =
   "picture_chat_admin_refresh_token";
-
 
 let selectedFile = null;
 
@@ -566,7 +596,7 @@ let viewerIndex = 0;
 
 
 /* =========================
-   BASIC HELPERS
+   HELPERS
 ========================= */
 
 function showToast(message){
@@ -580,13 +610,16 @@ function showToast(message){
 
   setTimeout(() => {
     toast.style.display = "none";
-  }, 2500);
+  },2500);
 }
 
 
 function escapeHtml(value){
 
-  if(value === null || value === undefined){
+  if(
+    value === null ||
+    value === undefined
+  ){
     return "";
   }
 
@@ -614,7 +647,8 @@ function getGuestName(){
 
     const number =
       Math.floor(
-        1000 + Math.random() * 9000
+        1000 +
+        Math.random() * 9000
       );
 
     name =
@@ -631,7 +665,7 @@ function getGuestName(){
 
 
 /* =========================
-   ADMIN SESSION
+   ADMIN
 ========================= */
 
 function getAdminAccessToken(){
@@ -642,42 +676,150 @@ function getAdminAccessToken(){
 }
 
 
-function getCurrentUserId(){
-
-  if(getAdminAccessToken()){
-    return ADMIN_UID;
-  }
-
-  return null;
-}
-
-
-function getCurrentUserName(){
-
-  if(getAdminAccessToken()){
-    return "Admin";
-  }
-
-  return getGuestName();
-}
-
-
 function isAdmin(){
 
   return !!getAdminAccessToken();
 }
 
 
+function getCurrentUserId(){
+
+  return isAdmin()
+    ? ADMIN_UID
+    : null;
+}
+
+
+function getCurrentUserName(){
+
+  return isAdmin()
+    ? "Admin"
+    : getGuestName();
+}
+
+
 /* =========================
-   ADMIN LOGIN
+   RESTORE ADMIN SESSION
 ========================= */
+
+async function restoreAdminSession(){
+
+  const accessToken =
+    localStorage.getItem(
+      ADMIN_ACCESS_KEY
+    );
+
+  const refreshToken =
+    localStorage.getItem(
+      ADMIN_REFRESH_KEY
+    );
+
+
+  if(
+    !accessToken ||
+    !refreshToken
+  ){
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+  await supabaseClient.auth.setSession({
+    access_token:accessToken,
+    refresh_token:refreshToken
+  });
+
+
+  if(error || !data?.session){
+
+    localStorage.removeItem(
+      ADMIN_ACCESS_KEY
+    );
+
+    localStorage.removeItem(
+      ADMIN_REFRESH_KEY
+    );
+
+    return;
+  }
+
+
+  if(data.user?.id !== ADMIN_UID){
+
+    await supabaseClient.auth.signOut();
+
+    localStorage.removeItem(
+      ADMIN_ACCESS_KEY
+    );
+
+    localStorage.removeItem(
+      ADMIN_REFRESH_KEY
+    );
+  }
+
+}
+
+
+/* =========================
+   ADMIN UI
+========================= */
+
+function updateAdminUI(){
+
+  const loggedIn =
+    isAdmin();
+
+
+  document.getElementById(
+    "loginBtn"
+  ).style.display =
+    loggedIn
+      ? "none"
+      : "inline-block";
+
+
+  document.getElementById(
+    "logoutBtn"
+  ).style.display =
+    loggedIn
+      ? "inline-block"
+      : "none";
+
+
+  document.getElementById(
+    "uploadCard"
+  ).style.display =
+    loggedIn
+      ? "block"
+      : "none";
+
+
+  document.getElementById(
+    "publicNote"
+  ).style.display =
+    loggedIn
+      ? "none"
+      : "block";
+
+
+  document.getElementById(
+    "adminStatus"
+  ).textContent =
+    loggedIn
+      ? "👑 Admin হিসেবে লগইন করা আছে"
+      : "Public Viewer Mode";
+}
+
 
 function openLogin(){
 
   document.getElementById(
     "loginPanel"
-  ).style.display = "block";
-
+  ).style.display =
+    "block";
 }
 
 
@@ -685,10 +827,14 @@ function closeLogin(){
 
   document.getElementById(
     "loginPanel"
-  ).style.display = "none";
-
+  ).style.display =
+    "none";
 }
 
+
+/* =========================
+   LOGIN
+========================= */
 
 async function loginAdmin(){
 
@@ -702,7 +848,11 @@ async function loginAdmin(){
       "adminPassword"
     ).value;
 
-  if(!email || !password){
+
+  if(
+    !email ||
+    !password
+  ){
 
     showToast(
       "Email এবং Password দিন"
@@ -716,26 +866,45 @@ async function loginAdmin(){
     data,
     error
   } =
-  await supabaseClient.auth.signInWithPassword({
-    email,
-    password
-  });
+  await supabaseClient.auth
+    .signInWithPassword({
+      email,
+      password
+    });
 
 
   if(error){
 
     showToast(
-      "Login failed: " + error.message
+      "Login failed: " +
+      error.message
     );
 
     return;
   }
 
 
-  if(!data.session){
+  if(
+    !data?.session ||
+    !data?.user
+  ){
 
     showToast(
       "Login session পাওয়া যায়নি"
+    );
+
+    return;
+  }
+
+
+  if(
+    data.user.id !== ADMIN_UID
+  ){
+
+    await supabaseClient.auth.signOut();
+
+    showToast(
+      "এই account Admin নয়"
     );
 
     return;
@@ -753,43 +922,26 @@ async function loginAdmin(){
   );
 
 
-  if(data.user?.id !== ADMIN_UID){
-
-    await supabaseClient.auth.signOut();
-
-    localStorage.removeItem(
-      ADMIN_ACCESS_KEY
-    );
-
-    localStorage.removeItem(
-      ADMIN_REFRESH_KEY
-    );
-
-    showToast(
-      "এই account-এর Admin permission নেই"
-    );
-
-    return;
-  }
-
-
   closeLogin();
 
   updateAdminUI();
 
   showToast(
-    "👑 Admin Login সফল হয়েছে"
+    "👑 Admin Login সফল"
   );
 
-  loadPosts();
+
+  await loadPosts();
 }
 
 
+/* =========================
+   LOGOUT
+========================= */
+
 async function logoutAdmin(){
 
-  try{
-    await supabaseClient.auth.signOut();
-  }catch(e){}
+  await supabaseClient.auth.signOut();
 
   localStorage.removeItem(
     ADMIN_ACCESS_KEY
@@ -805,33 +957,7 @@ async function logoutAdmin(){
     "Admin Logout হয়েছে"
   );
 
-  loadPosts();
-}
-
-
-function updateAdminUI(){
-
-  const loggedIn =
-    isAdmin();
-
-  document.getElementById(
-    "loginBtn"
-  ).style.display =
-    loggedIn ? "none" : "inline-block";
-
-
-  document.getElementById(
-    "logoutBtn"
-  ).style.display =
-    loggedIn ? "inline-block" : "none";
-
-
-  document.getElementById(
-    "adminStatus"
-  ).textContent =
-    loggedIn
-      ? "👑 Admin হিসেবে লগইন করা আছে"
-      : "Admin হিসেবে লগইন করা নেই";
+  await loadPosts();
 }
 
 
@@ -840,96 +966,119 @@ function updateAdminUI(){
 ========================= */
 
 document
-  .getElementById("photoInput")
-  .addEventListener(
-    "change",
-    function(){
+.getElementById("photoInput")
+.addEventListener(
+  "change",
+  function(){
 
-      const file =
-        this.files[0];
-
-      if(!file){
-
-        selectedFile = null;
-
-        document.getElementById(
-          "previewBox"
-        ).style.display = "none";
-
-        document.getElementById(
-          "postBtn"
-        ).disabled = true;
-
-        return;
-      }
+    const file =
+      this.files[0];
 
 
-      if(!file.type.startsWith("image/")){
+    if(!file){
 
-        showToast(
-          "শুধু Image file দিন"
-        );
+      selectedFile = null;
 
-        this.value = "";
-
-        return;
-      }
-
-
-      if(file.size > 50 * 1024 * 1024){
-
-        showToast(
-          "ছবির size 50MB-এর বেশি হতে পারবে না"
-        );
-
-        this.value = "";
-
-        return;
-      }
-
-
-      selectedFile = file;
-
-
-      const reader =
-        new FileReader();
-
-      reader.onload =
-        function(e){
-
-          document.getElementById(
-            "previewImage"
-          ).src = e.target.result;
-
-          document.getElementById(
-            "previewBox"
-          ).style.display = "block";
-        };
-
-      reader.readAsDataURL(file);
-
+      document.getElementById(
+        "previewBox"
+      ).style.display =
+        "none";
 
       document.getElementById(
         "postBtn"
-      ).disabled = false;
+      ).disabled =
+        true;
 
+      return;
     }
-  );
+
+
+    if(
+      !file.type.startsWith("image/")
+    ){
+
+      showToast(
+        "শুধু Image file দিন"
+      );
+
+      this.value = "";
+
+      return;
+    }
+
+
+    if(
+      file.size >
+      50 * 1024 * 1024
+    ){
+
+      showToast(
+        "ছবির size 50MB-এর বেশি হতে পারবে না"
+      );
+
+      this.value = "";
+
+      return;
+    }
+
+
+    selectedFile = file;
+
+
+    const reader =
+      new FileReader();
+
+
+    reader.onload =
+      function(e){
+
+        document.getElementById(
+          "previewImage"
+        ).src =
+          e.target.result;
+
+        document.getElementById(
+          "previewBox"
+        ).style.display =
+          "block";
+      };
+
+
+    reader.readAsDataURL(file);
+
+
+    document.getElementById(
+      "postBtn"
+    ).disabled =
+      false;
+
+  }
+);
 
 
 /* =========================
-   UPLOAD PHOTO
+   UPLOAD
 ========================= */
 
 document
-  .getElementById("postBtn")
-  .addEventListener(
-    "click",
-    uploadPhoto
-  );
+.getElementById("postBtn")
+.addEventListener(
+  "click",
+  uploadPhoto
+);
 
 
 async function uploadPhoto(){
+
+  if(!isAdmin()){
+
+    showToast(
+      "Admin Login প্রয়োজন"
+    );
+
+    return;
+  }
+
 
   if(!selectedFile){
 
@@ -945,6 +1094,7 @@ async function uploadPhoto(){
     document.getElementById(
       "postBtn"
     );
+
 
   postBtn.disabled = true;
 
@@ -972,7 +1122,7 @@ async function uploadPhoto(){
 
 
     const {
-      error: uploadError
+      error:uploadError
     } =
     await supabaseClient.storage
       .from(BUCKET)
@@ -988,27 +1138,21 @@ async function uploadPhoto(){
 
 
     if(uploadError){
+
       throw uploadError;
     }
 
 
-    const userId =
-      getCurrentUserId();
-
-    const userName =
-      getCurrentUserName();
-
-
     const {
-      error: dbError
+      error:dbError
     } =
     await supabaseClient
       .from("photo_posts")
       .insert({
         file_name:fileName,
         likes:0,
-        user_id:userId,
-        user_name:userName
+        user_id:ADMIN_UID,
+        user_name:"Admin"
       });
 
 
@@ -1017,7 +1161,9 @@ async function uploadPhoto(){
       await supabaseClient
         .storage
         .from(BUCKET)
-        .remove([fileName]);
+        .remove([
+          fileName
+        ]);
 
       throw dbError;
     }
@@ -1030,16 +1176,20 @@ async function uploadPhoto(){
 
     selectedFile = null;
 
+
     document.getElementById(
       "photoInput"
     ).value = "";
 
+
     document.getElementById(
       "previewBox"
-    ).style.display = "none";
+    ).style.display =
+      "none";
 
 
     await loadPosts();
+
 
   }catch(error){
 
@@ -1062,7 +1212,7 @@ async function uploadPhoto(){
 
 
 /* =========================
-   GET PUBLIC IMAGE URL
+   IMAGE URL
 ========================= */
 
 function getImageUrl(fileName){
@@ -1072,7 +1222,9 @@ function getImageUrl(fileName){
     "/storage/v1/object/public/" +
     BUCKET +
     "/" +
-    encodeURIComponent(fileName)
+    encodeURIComponent(
+      fileName
+    )
   );
 }
 
@@ -1099,40 +1251,37 @@ async function loadPosts(){
       data:files,
       error:fileError
     } =
-    await supabaseClient
-      .storage
+    await supabaseClient.storage
       .from(BUCKET)
-      .list("",{
-        limit:100,
-        sortBy:{
-          column:"name",
-          order:"desc"
+      .list(
+        "",
+        {
+          limit:100,
+          sortBy:{
+            column:"name",
+            order:"desc"
+          }
         }
-      });
+      );
 
 
     if(fileError){
+
       throw fileError;
     }
 
 
-    if(!files || files.length === 0){
-
-      postsElement.innerHTML =
-        '<div class="empty">📭 এখনো কোনো ছবি নেই</div>';
-
-      return;
-    }
-
-
     const imageFiles =
-      files.filter(file =>
-        /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i
-          .test(file.name)
+      (files || []).filter(
+        file =>
+          /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i
+            .test(file.name)
       );
 
 
-    if(imageFiles.length === 0){
+    if(
+      imageFiles.length === 0
+    ){
 
       postsElement.innerHTML =
         '<div class="empty">📭 এখনো কোনো ছবি নেই</div>';
@@ -1165,22 +1314,22 @@ async function loadPosts(){
             if(error){
 
               console.error(
-                "Post DB error:",
                 error
               );
-
             }
 
 
             return {
               file,
-              post:data || {
-                file_name:file.name,
-                likes:0,
-                user_id:null,
-                user_name:null,
-                created_at:null
-              }
+              post:
+                data || {
+                  file_name:
+                    file.name,
+                  likes:0,
+                  user_id:null,
+                  user_name:null,
+                  created_at:null
+                }
             };
 
           }
@@ -1190,7 +1339,8 @@ async function loadPosts(){
 
     postsData =
       postResults.map(
-        item => item.file.name
+        item =>
+          item.file.name
       );
 
 
@@ -1248,13 +1398,18 @@ function renderPost(
 
   if(!ownerName){
 
-    if(post.user_id === ADMIN_UID){
+    if(
+      post.user_id ===
+      ADMIN_UID
+    ){
 
-      ownerName = "Admin";
+      ownerName =
+        "Admin";
 
     }else{
 
-      ownerName = "Guest";
+      ownerName =
+        "Guest";
     }
   }
 
@@ -1272,7 +1427,10 @@ function renderPost(
 
 
   const div =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
+
 
   div.className =
     "post";
@@ -1308,11 +1466,13 @@ function renderPost(
 
         <button
           class="like-btn"
-          onclick="likePost('${escapeHtml(fileName)}', this)"
+          onclick="likePost('${escapeHtml(fileName)}',this)"
         >
           ❤️
           <span>
-            ${Number(post.likes || 0)}
+            ${Number(
+              post.likes || 0
+            )}
           </span>
         </button>
 
@@ -1360,7 +1520,8 @@ function renderPost(
 
       ${
         isAdmin()
-        ? `
+        ?
+        `
           <button
             class="delete-btn"
             onclick="deletePhoto('${escapeHtml(fileName)}')"
@@ -1368,7 +1529,8 @@ function renderPost(
             🗑️ Delete Photo
           </button>
         `
-        : ""
+        :
+        ""
       }
 
     </div>
@@ -1376,24 +1538,32 @@ function renderPost(
   `;
 
 
-  postsElement.appendChild(div);
+  postsElement.appendChild(
+    div
+  );
 
 
-  loadComments(fileName);
+  loadComments(
+    fileName
+  );
 
 }
 
 
 /* =========================
-   LOAD COMMENTS
+   COMMENTS
 ========================= */
 
-async function loadComments(fileName){
+async function loadComments(
+  fileName
+){
 
   const element =
     document.getElementById(
       "comments-" +
-      encodeURIComponent(fileName)
+      encodeURIComponent(
+        fileName
+      )
     );
 
 
@@ -1426,11 +1596,15 @@ async function loadComments(fileName){
 
 
     if(error){
+
       throw error;
     }
 
 
-    if(!data || data.length === 0){
+    if(
+      !data ||
+      data.length === 0
+    ){
 
       element.innerHTML =
         '<div style="color:#666;font-size:12px">💬 এখনো কোনো কমেন্ট নেই</div>';
@@ -1439,7 +1613,8 @@ async function loadComments(fileName){
     }
 
 
-    element.innerHTML = "";
+    element.innerHTML =
+      "";
 
 
     data.forEach(
@@ -1453,20 +1628,18 @@ async function loadComments(fileName){
           comment.comment;
 
 
-        /*
-          পুরোনো comment যদি
-          Guest-1234|||হ্যালো
-          format-এ থাকে,
-          সেটাও ঠিকভাবে দেখাবে।
-        */
-
         if(
           commentText &&
-          commentText.includes("|||")
+          commentText.includes(
+            "|||"
+          )
         ){
 
           const parts =
-            commentText.split("|||");
+            commentText.split(
+              "|||"
+            );
+
 
           if(!userName){
 
@@ -1474,26 +1647,29 @@ async function loadComments(fileName){
               parts[0];
           }
 
+
           commentText =
-            parts.slice(1).join("|||");
+            parts
+              .slice(1)
+              .join("|||");
         }
 
 
         if(!userName){
 
-          if(comment.user_id === ADMIN_UID){
-
-            userName = "Admin";
-
-          }else{
-
-            userName = "Guest";
-          }
+          userName =
+            comment.user_id ===
+            ADMIN_UID
+              ? "Admin"
+              : "Guest";
         }
 
 
         const commentDiv =
-          document.createElement("div");
+          document.createElement(
+            "div"
+          );
+
 
         commentDiv.className =
           "comment";
@@ -1502,25 +1678,38 @@ async function loadComments(fileName){
         commentDiv.innerHTML = `
 
           <div class="comment-user">
+
             ${
               userName === "Admin"
               ? "👑"
               : "👤"
             }
-            ${escapeHtml(userName)}
+
+            ${escapeHtml(
+              userName
+            )}
+
           </div>
+
 
           <div class="comment-text">
-            ${escapeHtml(commentText)}
+            ${escapeHtml(
+              commentText
+            )}
           </div>
 
+
           <div class="comment-date">
-            ${formatDate(comment.created_at)}
+            ${formatDate(
+              comment.created_at
+            )}
           </div>
+
 
           ${
             isAdmin()
-            ? `
+            ?
+            `
               <button
                 onclick="deleteComment('${comment.id}')"
                 style="
@@ -1535,7 +1724,8 @@ async function loadComments(fileName){
                 🗑️ Delete Comment
               </button>
             `
-            : ""
+            :
+            ""
           }
 
         `;
@@ -1564,12 +1754,16 @@ async function loadComments(fileName){
    ADD COMMENT
 ========================= */
 
-async function addComment(fileName){
+async function addComment(
+  fileName
+){
 
   const input =
     document.getElementById(
       "input-" +
-      encodeURIComponent(fileName)
+      encodeURIComponent(
+        fileName
+      )
     );
 
 
@@ -1597,6 +1791,7 @@ async function addComment(fileName){
     const userId =
       getCurrentUserId();
 
+
     const userName =
       getCurrentUserName();
 
@@ -1607,19 +1802,25 @@ async function addComment(fileName){
     await supabaseClient
       .from("photo_comments")
       .insert({
-        file_name:fileName,
-        comment:text,
-        user_id:userId,
-        user_name:userName
+        file_name:
+          fileName,
+        comment:
+          text,
+        user_id:
+          userId,
+        user_name:
+          userName
       });
 
 
     if(error){
+
       throw error;
     }
 
 
-    input.value = "";
+    input.value =
+      "";
 
 
     await loadComments(
@@ -1645,17 +1846,22 @@ function commentKey(
   fileName
 ){
 
-  if(event.key === "Enter"){
+  if(
+    event.key ===
+    "Enter"
+  ){
 
     event.preventDefault();
 
-    addComment(fileName);
+    addComment(
+      fileName
+    );
   }
 }
 
 
 /* =========================
-   LIKE
+   SECURE LIKE
 ========================= */
 
 async function likePost(
@@ -1665,7 +1871,8 @@ async function likePost(
 
   try{
 
-    button.disabled = true;
+    button.disabled =
+      true;
 
 
     const {
@@ -1673,54 +1880,31 @@ async function likePost(
       error
     } =
     await supabaseClient
-      .from("photo_posts")
-      .select("likes")
-      .eq(
-        "file_name",
-        fileName
-      )
-      .maybeSingle();
+      .rpc(
+        "add_photo_like",
+        {
+          p_file_name:
+            fileName
+        }
+      );
 
 
     if(error){
+
       throw error;
     }
 
 
-    const currentLikes =
-      Number(
-        data?.likes || 0
-      );
-
-
-    const {
-      error:updateError
-    } =
-    await supabaseClient
-      .from("photo_posts")
-      .update({
-        likes:
-          currentLikes + 1
-      })
-      .eq(
-        "file_name",
-        fileName
-      );
-
-
-    if(updateError){
-      throw updateError;
-    }
-
-
     const span =
-      button.querySelector("span");
+      button.querySelector(
+        "span"
+      );
 
 
     if(span){
 
       span.textContent =
-        currentLikes + 1;
+        Number(data || 0);
     }
 
 
@@ -1734,7 +1918,8 @@ async function likePost(
 
   }finally{
 
-    button.disabled = false;
+    button.disabled =
+      false;
   }
 
 }
@@ -1758,22 +1943,17 @@ async function deletePhoto(
   }
 
 
-  const confirmDelete =
-    confirm(
+  if(
+    !confirm(
       "এই ছবিটি এবং এর সব কমেন্ট Delete করবেন?"
-    );
+    )
+  ){
 
-
-  if(!confirmDelete){
     return;
   }
 
 
   try{
-
-    /*
-      প্রথমে Storage থেকে ছবি Delete
-    */
 
     const {
       error:storageError
@@ -1781,25 +1961,16 @@ async function deletePhoto(
     await supabaseClient
       .storage
       .from(BUCKET)
-      .remove([fileName]);
+      .remove([
+        fileName
+      ]);
 
 
     if(storageError){
 
-      console.error(
-        storageError
-      );
-
-      /*
-        Storage error হলেও
-        DB delete চেষ্টা করা হবে।
-      */
+      throw storageError;
     }
 
-
-    /*
-      Photo comments delete
-    */
 
     const {
       error:commentError
@@ -1814,13 +1985,10 @@ async function deletePhoto(
 
 
     if(commentError){
+
       throw commentError;
     }
 
-
-    /*
-      Photo post delete
-    */
 
     const {
       error:postError
@@ -1835,6 +2003,7 @@ async function deletePhoto(
 
 
     if(postError){
+
       throw postError;
     }
 
@@ -1883,6 +2052,7 @@ async function deleteComment(
       "এই কমেন্টটি Delete করবেন?"
     )
   ){
+
     return;
   }
 
@@ -1902,6 +2072,7 @@ async function deleteComment(
 
 
     if(error){
+
       throw error;
     }
 
@@ -1928,7 +2099,7 @@ async function deleteComment(
 
 
 /* =========================
-   COMMENT FOCUS
+   FOCUS COMMENT
 ========================= */
 
 function focusComment(
@@ -1938,7 +2109,9 @@ function focusComment(
   const input =
     document.getElementById(
       "input-" +
-      encodeURIComponent(fileName)
+      encodeURIComponent(
+        fileName
+      )
     );
 
 
@@ -1950,7 +2123,6 @@ function focusComment(
       behavior:"smooth",
       block:"center"
     });
-
   }
 
 }
@@ -1990,15 +2162,18 @@ function formatDate(
 
 
 /* =========================
-   FULLSCREEN VIEWER
+   VIEWER
 ========================= */
 
-function openViewer(index){
+function openViewer(
+  index
+){
 
   if(
     !postsData ||
     !postsData[index]
   ){
+
     return;
   }
 
@@ -2007,21 +2182,20 @@ function openViewer(index){
     index;
 
 
-  const fileName =
-    postsData[index];
-
-
   document.getElementById(
     "viewerImage"
   ).src =
-    getImageUrl(fileName);
+    getImageUrl(
+      postsData[
+        viewerIndex
+      ]
+    );
 
 
   document.getElementById(
     "viewer"
   ).style.display =
     "flex";
-
 }
 
 
@@ -2031,20 +2205,25 @@ function closeViewer(){
     "viewer"
   ).style.display =
     "none";
-
 }
 
 
 function viewerPrev(){
 
-  if(!postsData.length){
+  if(
+    !postsData.length
+  ){
+
     return;
   }
 
 
   viewerIndex--;
 
-  if(viewerIndex < 0){
+
+  if(
+    viewerIndex < 0
+  ){
 
     viewerIndex =
       postsData.length - 1;
@@ -2055,20 +2234,25 @@ function viewerPrev(){
     "viewerImage"
   ).src =
     getImageUrl(
-      postsData[viewerIndex]
+      postsData[
+        viewerIndex
+      ]
     );
-
 }
 
 
 function viewerNext(){
 
-  if(!postsData.length){
+  if(
+    !postsData.length
+  ){
+
     return;
   }
 
 
   viewerIndex++;
+
 
   if(
     viewerIndex >=
@@ -2083,40 +2267,53 @@ function viewerNext(){
     "viewerImage"
   ).src =
     getImageUrl(
-      postsData[viewerIndex]
+      postsData[
+        viewerIndex
+      ]
     );
-
 }
 
 
 /* =========================
-   ESCAPE VIEWER
+   KEYBOARD
 ========================= */
 
 document.addEventListener(
   "keydown",
   function(event){
 
-    if(event.key === "Escape"){
+    if(
+      event.key ===
+      "Escape"
+    ){
 
       closeViewer();
-
     }
+
 
     if(
       document.getElementById(
         "viewer"
-      ).style.display === "flex"
+      ).style.display ===
+      "flex"
     ){
 
-      if(event.key === "ArrowLeft"){
+      if(
+        event.key ===
+        "ArrowLeft"
+      ){
+
         viewerPrev();
       }
 
-      if(event.key === "ArrowRight"){
+
+      if(
+        event.key ===
+        "ArrowRight"
+      ){
+
         viewerNext();
       }
-
     }
 
   }
@@ -2129,9 +2326,11 @@ document.addEventListener(
 
 async function init(){
 
+  await restoreAdminSession();
+
   updateAdminUI();
 
-  loadPosts();
+  await loadPosts();
 
 }
 
