@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Picture Chat</title>
 
   <style>
@@ -96,6 +97,24 @@
       display: block;
     }
 
+    .like-button {
+      background: #ff4d6d;
+      width: 100%;
+      margin-top: 12px;
+      font-size: 16px;
+    }
+
+    .like-button:active {
+      transform: scale(0.98);
+    }
+
+    .like-count {
+      color: #555;
+      font-size: 14px;
+      margin-top: 8px;
+      text-align: center;
+    }
+
     .footer {
       text-align: center;
       margin-top: 30px;
@@ -152,33 +171,23 @@
 
   </div>
 
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
   <script>
 
-    const SUPABASE_URL =
-      "https://syzauwriwjwnlwbcxlnf.supabase.co";
-
-    const SUPABASE_KEY =
-      "sb_publishable_af7xm3dnJhVO5XGXRIiyRA_zDOT230o";
-
-    const BUCKET =
-      "photos";
+    const supabase = window.supabase.createClient(
+      "https://syzauwriwjwnlwbcxlnf.supabase.co",
+      "sb_publishable_af7xm3dnJhVO5XGXRIiyRA_zDOT230o"
+    );
 
 
-    const photoInput =
-      document.getElementById("photoInput");
-
-    const preview =
-      document.getElementById("preview");
-
-    const postButton =
-      document.getElementById("postButton");
-
-    const posts =
-      document.getElementById("posts");
-
-    const message =
-      document.getElementById("message");
-
+    const photoInput = document.getElementById("photoInput");
+    const preview = document.getElementById("preview");
+    const postButton = document.getElementById("postButton");
+    const posts = document.getElementById("posts");
+    const message = document.getElementById("message");
 
     let selectedFile = null;
 
@@ -199,12 +208,10 @@
       reader.onload = function (event) {
 
         preview.src = event.target.result;
-
         preview.style.display = "block";
 
         message.innerText =
           "✅ ছবি প্রস্তুত। এখন পোস্ট করুন।";
-
       };
 
       reader.readAsDataURL(file);
@@ -212,103 +219,186 @@
     });
 
 
-    // Supabase থেকে ছবির তালিকা
+    // সব ছবি দেখানো
     async function loadPosts() {
 
-      try {
-
-        const response = await fetch(
-          SUPABASE_URL +
-          "/storage/v1/object/list/" +
-          BUCKET,
-          {
-            method: "POST",
-
-            headers: {
-              "Authorization":
-                "Bearer " + SUPABASE_KEY,
-
-              "apikey":
-                SUPABASE_KEY,
-
-              "Content-Type":
-                "application/json"
-            },
-
-            body: JSON.stringify({
-              prefix: "",
-              limit: 100,
-              sortBy: {
-                column: "created_at",
-                order: "desc"
-              }
-            })
-          }
-        );
+      const { data: files, error: listError } =
+        await supabase.storage
+          .from("photos")
+          .list("", {
+            limit: 100,
+            sortBy: {
+              column: "created_at",
+              order: "desc"
+            }
+          });
 
 
-        if (!response.ok) {
+      if (listError) {
 
-          console.log(
-            "List error:",
-            await response.text()
-          );
+        console.log("Storage error:", listError);
 
-          return;
+        message.innerText =
+          "❌ ছবি লোড হয়নি: " + listError.message;
+
+        return;
+      }
+
+
+      posts.innerHTML = "";
+
+
+      if (!files || files.length === 0) {
+
+        posts.innerHTML =
+          "<p style='text-align:center;'>এখনও কোনো ছবি পোস্ট করা হয়নি।</p>";
+
+        return;
+      }
+
+
+      for (const file of files) {
+
+        if (!file.name) {
+          continue;
         }
 
 
-        const data =
-          await response.json();
+        const { data: urlData } =
+          supabase.storage
+            .from("photos")
+            .getPublicUrl(file.name);
 
 
-        posts.innerHTML = "";
+        const { data: postData } =
+          await supabase
+            .from("photo_posts")
+            .select("id, likes")
+            .eq("file_name", file.name)
+            .maybeSingle();
 
 
-        data.forEach(function (file) {
+        let likes = 0;
 
-          if (!file.name) {
-            return;
+
+        if (postData) {
+          likes = postData.likes || 0;
+        }
+
+
+        const post =
+          document.createElement("div");
+
+        post.className = "post";
+
+
+        const image =
+          document.createElement("img");
+
+        image.src = urlData.publicUrl;
+        image.loading = "lazy";
+        image.alt = "Shared photo";
+
+
+        const likeButton =
+          document.createElement("button");
+
+        likeButton.className = "like-button";
+
+        likeButton.innerText =
+          "❤️ Like";
+
+
+        const likeCount =
+          document.createElement("div");
+
+        likeCount.className = "like-count";
+
+        likeCount.innerText =
+          "❤️ " + likes + " Likes";
+
+
+        likeButton.addEventListener(
+          "click",
+          async function () {
+
+            likeButton.disabled = true;
+
+            let currentLikes = likes;
+
+
+            if (!postData) {
+
+              const { error: insertError } =
+                await supabase
+                  .from("photo_posts")
+                  .insert({
+                    file_name: file.name,
+                    likes: 1
+                  });
+
+
+              if (insertError) {
+
+                console.log(
+                  "Like insert error:",
+                  insertError
+                );
+
+                likeButton.disabled = false;
+
+                return;
+              }
+
+
+              currentLikes = 1;
+
+
+            } else {
+
+              currentLikes = likes + 1;
+
+
+              const { error: updateError } =
+                await supabase
+                  .from("photo_posts")
+                  .update({
+                    likes: currentLikes
+                  })
+                  .eq("file_name", file.name);
+
+
+              if (updateError) {
+
+                console.log(
+                  "Like update error:",
+                  updateError
+                );
+
+                likeButton.disabled = false;
+
+                return;
+              }
+
+            }
+
+
+            likes = currentLikes;
+
+            likeCount.innerText =
+              "❤️ " + likes + " Likes";
+
+            likeButton.disabled = false;
+
           }
-
-
-          const imageUrl =
-            SUPABASE_URL +
-            "/storage/v1/object/public/" +
-            BUCKET +
-            "/" +
-            encodeURIComponent(file.name);
-
-
-          const post =
-            document.createElement("div");
-
-          post.className = "post";
-
-
-          const image =
-            document.createElement("img");
-
-          image.src = imageUrl;
-
-          image.loading = "lazy";
-
-          image.alt =
-            "Shared photo";
-
-
-          post.appendChild(image);
-
-          posts.appendChild(post);
-
-        });
-
-      } catch (error) {
-
-        console.log(
-          "Load error:",
-          error
         );
+
+
+        post.appendChild(image);
+        post.appendChild(likeButton);
+        post.appendChild(likeCount);
+
+        posts.appendChild(post);
 
       }
 
@@ -335,100 +425,88 @@
           "⏳ ছবি আপলোড হচ্ছে...";
 
 
-        try {
-
-          const safeFileName =
-            selectedFile.name.replace(
-              /[^a-zA-Z0-9._-]/g,
-              "_"
-            );
+        const safeFileName =
+          selectedFile.name.replace(
+            /[^a-zA-Z0-9._-]/g,
+            "_"
+          );
 
 
-          const fileName =
-            Date.now() +
-            "-" +
-            safeFileName;
+        const fileName =
+          Date.now() + "-" + safeFileName;
 
 
-          const uploadUrl =
-            SUPABASE_URL +
-            "/storage/v1/object/" +
-            BUCKET +
-            "/" +
-            encodeURIComponent(fileName);
-
-
-          const response =
-            await fetch(
-              uploadUrl,
+        const { error: uploadError } =
+          await supabase.storage
+            .from("photos")
+            .upload(
+              fileName,
+              selectedFile,
               {
-                method: "POST",
-
-                headers: {
-                  "Authorization":
-                    "Bearer " + SUPABASE_KEY,
-
-                  "apikey":
-                    SUPABASE_KEY,
-
-                  "Content-Type":
-                    selectedFile.type ||
-                    "application/octet-stream"
-                },
-
-                body: selectedFile
+                cacheControl: "3600",
+                upsert: false,
+                contentType: selectedFile.type
               }
             );
 
 
-          if (!response.ok) {
-
-            const errorText =
-              await response.text();
-
-            throw new Error(
-              errorText ||
-              "Upload failed"
-            );
-
-          }
-
-
-          message.innerText =
-            "🎉 ছবি সফলভাবে পোস্ট হয়েছে!";
-
-
-          selectedFile = null;
-
-          photoInput.value = "";
-
-          preview.src = "";
-
-          preview.style.display =
-            "none";
-
-
-          postButton.disabled = false;
-
-
-          await loadPosts();
-
-
-        } catch (error) {
+        if (uploadError) {
 
           console.log(
             "Upload error:",
-            error
+            uploadError
           );
 
           message.innerText =
             "❌ আপলোড হয়নি: " +
-            error.message;
-
+            uploadError.message;
 
           postButton.disabled = false;
 
+          return;
         }
+
+
+        // নতুন ছবির Like record তৈরি
+        const { error: postError } =
+          await supabase
+            .from("photo_posts")
+            .insert({
+              file_name: fileName,
+              likes: 0
+            });
+
+
+        if (postError) {
+
+          console.log(
+            "Post database error:",
+            postError
+          );
+
+          message.innerText =
+            "⚠️ ছবি আপলোড হয়েছে, কিন্তু Like সিস্টেম তৈরি হয়নি।";
+
+        } else {
+
+          message.innerText =
+            "🎉 ছবি সফলভাবে পোস্ট হয়েছে!";
+
+        }
+
+
+        selectedFile = null;
+
+        photoInput.value = "";
+
+        preview.src = "";
+
+        preview.style.display = "none";
+
+        postButton.disabled = false;
+
+
+        await loadPosts();
 
       }
     );
