@@ -11,56 +11,94 @@
       box-sizing: border-box;
     }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background:
-        radial-gradient(circle at top, #25200f 0%, #0b0b0b 42%, #050505 100%);
+        radial-gradient(circle at top, #29230d 0%, #0b0b0b 38%, #050505 100%);
       color: #f5f5f5;
       min-height: 100vh;
     }
 
+    /* =========================
+       HEADER
+    ========================= */
+
     .header {
-      padding: 24px 15px;
+      padding: 23px 15px 20px;
       text-align: center;
-      background: rgba(10, 10, 10, 0.92);
+      background: rgba(8, 8, 8, 0.94);
       border-bottom: 1px solid rgba(212, 175, 55, 0.35);
-      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 5px 30px rgba(0,0,0,0.55);
       position: sticky;
       top: 0;
-      z-index: 10;
-      backdrop-filter: blur(12px);
+      z-index: 20;
+      backdrop-filter: blur(14px);
     }
 
     .logo {
       font-size: 28px;
       font-weight: bold;
       color: #f5d76e;
-      letter-spacing: 0.5px;
-      text-shadow: 0 0 15px rgba(212, 175, 55, 0.35);
+      letter-spacing: 0.4px;
+      text-shadow: 0 0 18px rgba(212,175,55,0.35);
     }
 
     .subtitle {
       margin-top: 6px;
-      color: #aaa;
+      color: #999;
       font-size: 13px;
     }
 
-    .container {
-      max-width: 620px;
-      margin: 25px auto;
-      padding: 15px;
+    .goldLine {
+      width: 80px;
+      height: 2px;
+      margin: 10px auto 0;
+      background:
+        linear-gradient(
+          90deg,
+          transparent,
+          #d4af37,
+          transparent
+        );
     }
 
+    /* =========================
+       MAIN
+    ========================= */
+
+    .container {
+      width: 100%;
+      max-width: 650px;
+      margin: 25px auto;
+      padding: 14px;
+    }
+
+    /* =========================
+       UPLOAD CARD
+    ========================= */
+
     .card {
-      background: linear-gradient(145deg, #181818, #0e0e0e);
-      border: 1px solid rgba(212, 175, 55, 0.28);
-      border-radius: 20px;
-      padding: 24px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(27,27,27,0.98),
+          rgba(11,11,11,0.98)
+        );
+
+      border: 1px solid rgba(212,175,55,0.30);
+      border-radius: 22px;
+      padding: 23px;
+
       text-align: center;
+
       box-shadow:
-        0 10px 35px rgba(0, 0, 0, 0.55),
-        inset 0 1px 0 rgba(255,255,255,0.03);
+        0 12px 40px rgba(0,0,0,0.55),
+        inset 0 1px 0 rgba(255,255,255,0.035);
     }
 
     .card h1 {
@@ -72,61 +110,115 @@
     .card p {
       color: #aaa;
       line-height: 1.6;
+      font-size: 14px;
     }
 
     .fileBox {
       margin-top: 18px;
       padding: 14px;
-      border: 1px dashed rgba(212, 175, 55, 0.55);
-      border-radius: 14px;
-      background: rgba(212, 175, 55, 0.04);
+
+      border: 1px dashed rgba(212,175,55,0.55);
+      border-radius: 15px;
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(212,175,55,0.06),
+          rgba(0,0,0,0.15)
+        );
     }
 
     input[type="file"] {
       width: 100%;
       color: #ddd;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     input[type="file"]::file-selector-button {
       border: 1px solid #c9a227;
       background: #17130a;
       color: #f5d76e;
+
       padding: 10px 14px;
       border-radius: 10px;
+
       cursor: pointer;
-      margin-right: 10px;
+      margin-right: 8px;
     }
+
+    input[type="file"]::file-selector-button:hover {
+      background: #251d0b;
+    }
+
+    /* =========================
+       PREVIEW
+    ========================= */
 
     #preview {
       display: none;
+
       width: 100%;
       max-height: 400px;
+
       object-fit: contain;
+
       margin-top: 18px;
+
       border-radius: 15px;
-      border: 1px solid rgba(212, 175, 55, 0.3);
+
+      border: 1px solid rgba(212,175,55,0.3);
+
       background: #050505;
+
+      box-shadow:
+        0 8px 25px rgba(0,0,0,0.4);
     }
+
+    /* =========================
+       POST BUTTON
+    ========================= */
 
     #postButton {
       width: 100%;
+
       margin-top: 18px;
+
       border: 1px solid #d4af37;
       border-radius: 13px;
+
       padding: 14px;
+
       font-size: 16px;
       font-weight: bold;
+
       color: #111;
-      background: linear-gradient(135deg, #f5d76e, #c99a18);
-      box-shadow: 0 5px 20px rgba(212, 175, 55, 0.2);
+
+      background:
+        linear-gradient(
+          135deg,
+          #f7df7b,
+          #c99a18
+        );
+
+      box-shadow:
+        0 6px 22px rgba(212,175,55,0.20);
+
       cursor: pointer;
-      transition: 0.2s;
+
+      transition:
+        transform 0.2s,
+        box-shadow 0.2s;
     }
 
     #postButton:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 7px 25px rgba(212, 175, 55, 0.3);
+      transform: translateY(-2px);
+
+      box-shadow:
+        0 9px 28px rgba(212,175,55,0.30);
+    }
+
+    #postButton:active {
+      transform: scale(0.98);
     }
 
     button:disabled {
@@ -141,41 +233,113 @@
       font-size: 14px;
     }
 
+    /* =========================
+       POSTS
+    ========================= */
+
     #posts {
       margin-top: 25px;
     }
 
     .post {
-      background: linear-gradient(145deg, #171717, #0d0d0d);
-      border: 1px solid rgba(212, 175, 55, 0.2);
-      border-radius: 18px;
-      padding: 12px;
+      position: relative;
+
+      background:
+        linear-gradient(
+          145deg,
+          #181818,
+          #0b0b0b
+        );
+
+      border: 1px solid rgba(212,175,55,0.22);
+      border-radius: 19px;
+
+      padding: 11px;
+
       margin-bottom: 20px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+
+      box-shadow:
+        0 9px 32px rgba(0,0,0,0.52);
+
       overflow: hidden;
+
+      animation: postAppear 0.45s ease;
+    }
+
+    @keyframes postAppear {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* =========================
+       POST IMAGE
+    ========================= */
+
+    .postImageWrap {
+      position: relative;
+      overflow: hidden;
+      border-radius: 14px;
+      background: #050505;
     }
 
     .post img {
       width: 100%;
       max-height: 650px;
+
       object-fit: contain;
-      border-radius: 13px;
+
+      border-radius: 14px;
+
       display: block;
+
       background: #050505;
+
+      cursor: zoom-in;
+
+      transition:
+        transform 0.35s ease,
+        filter 0.35s ease;
     }
+
+    .post img:hover {
+      transform: scale(1.015);
+      filter: brightness(1.05);
+    }
+
+    /* =========================
+       LIKE
+    ========================= */
 
     .likeButton {
       width: 100%;
+
       margin-top: 12px;
-      border: 1px solid rgba(212, 175, 55, 0.45);
+
+      border: 1px solid rgba(212,175,55,0.45);
       border-radius: 12px;
+
       padding: 12px;
+
       background: #15120a;
+
       color: #f5d76e;
+
       font-size: 16px;
       font-weight: bold;
+
       cursor: pointer;
-      transition: 0.2s;
+
+      transition:
+        transform 0.2s,
+        background 0.2s,
+        border-color 0.2s;
     }
 
     .likeButton:hover {
@@ -184,11 +348,16 @@
       transform: translateY(-1px);
     }
 
+    .likeButton:active {
+      transform: scale(0.97);
+    }
+
     .likeButton.liked {
       background: #29170f;
       border-color: #ff4d6d;
       color: #ff6b81;
-      animation: likePop 0.35s ease;
+
+      animation: likePop 0.4s ease;
     }
 
     @keyframes likePop {
@@ -196,8 +365,12 @@
         transform: scale(1);
       }
 
-      50% {
-        transform: scale(1.04);
+      40% {
+        transform: scale(1.06);
+      }
+
+      70% {
+        transform: scale(0.98);
       }
 
       100% {
@@ -207,58 +380,134 @@
 
     .likeCount {
       text-align: center;
-      margin-top: 9px;
+
+      margin-top: 8px;
+
       color: #aaa;
+
       font-size: 13px;
     }
 
+    /* =========================
+       COMMENTS
+    ========================= */
+
     .commentBox {
       margin-top: 15px;
+
       padding-top: 14px;
-      border-top: 1px solid rgba(212, 175, 55, 0.18);
+
+      border-top:
+        1px solid rgba(212,175,55,0.18);
+    }
+
+    .commentTop {
+      display: flex;
+
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 8px;
+
+      margin-bottom: 10px;
     }
 
     .commentTitle {
       color: #f5d76e;
+
       font-size: 15px;
       font-weight: bold;
-      margin-bottom: 10px;
+    }
+
+    .refreshComments {
+      border: 1px solid rgba(212,175,55,0.28);
+
+      background: #111;
+
+      color: #aaa;
+
+      border-radius: 8px;
+
+      padding: 5px 9px;
+
+      font-size: 12px;
+
+      cursor: pointer;
+
+      transition: 0.2s;
+    }
+
+    .refreshComments:hover {
+      color: #f5d76e;
+      border-color: #d4af37;
     }
 
     .commentInput {
       width: 100%;
-      min-height: 44px;
+
+      min-height: 46px;
+
       padding: 11px 12px;
-      border-radius: 10px;
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      background: #0a0a0a;
+
+      border-radius: 11px;
+
+      border:
+        1px solid rgba(212,175,55,0.3);
+
+      background: #090909;
+
       color: #fff;
+
       outline: none;
+
       font-size: 14px;
+
       font-family: Arial, sans-serif;
+
       resize: vertical;
+
+      transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
     }
 
     .commentInput:focus {
       border-color: #d4af37;
-      box-shadow: 0 0 12px rgba(212, 175, 55, 0.08);
+
+      box-shadow:
+        0 0 14px rgba(212,175,55,0.09);
     }
 
     .commentButton {
       width: 100%;
+
       margin-top: 8px;
-      padding: 10px;
-      border: 1px solid #c9a227;
+
+      padding: 11px;
+
+      border:
+        1px solid #c9a227;
+
       border-radius: 10px;
+
       background: #17130a;
+
       color: #f5d76e;
+
       font-weight: bold;
+
       cursor: pointer;
+
       transition: 0.2s;
     }
 
     .commentButton:hover {
       background: #211b0c;
+      border-color: #d4af37;
+    }
+
+    .commentButton:active {
+      transform: scale(0.98);
     }
 
     .commentsList {
@@ -267,22 +516,38 @@
 
     .commentItem {
       background:
-        linear-gradient(145deg, #151515, #0d0d0d);
-      border: 1px solid rgba(212, 175, 55, 0.16);
-      border-radius: 13px;
+        linear-gradient(
+          145deg,
+          #171717,
+          #0d0d0d
+        );
+
+      border:
+        1px solid rgba(212,175,55,0.17);
+
+      border-radius: 14px;
+
       padding: 12px;
+
       margin-top: 8px;
+
       color: #ddd;
+
       font-size: 14px;
+
       word-break: break-word;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
-      animation: commentAppear 0.3s ease;
+
+      box-shadow:
+        0 4px 15px rgba(0,0,0,0.25);
+
+      animation:
+        commentAppear 0.3s ease;
     }
 
     @keyframes commentAppear {
       from {
         opacity: 0;
-        transform: translateY(5px);
+        transform: translateY(6px);
       }
 
       to {
@@ -293,95 +558,287 @@
 
     .commentHeader {
       display: flex;
+
       align-items: center;
+
       justify-content: space-between;
+
       gap: 10px;
+
       margin-bottom: 6px;
     }
 
     .commentName {
       color: #f5d76e;
+
       font-weight: bold;
+
       font-size: 14px;
     }
 
     .commentTime {
       color: #666;
+
       font-size: 11px;
+
       white-space: nowrap;
     }
 
     .commentText {
       color: #ddd;
-      line-height: 1.5;
+
+      line-height: 1.55;
+
       padding-left: 2px;
     }
 
     .noComments {
       color: #666;
+
       font-size: 13px;
+
       text-align: center;
-      padding: 8px;
+
+      padding: 9px;
     }
+
+    /* =========================
+       FULLSCREEN IMAGE
+    ========================= */
+
+    .imageViewer {
+      display: none;
+
+      position: fixed;
+
+      inset: 0;
+
+      z-index: 999;
+
+      background:
+        rgba(0,0,0,0.94);
+
+      align-items: center;
+
+      justify-content: center;
+
+      padding: 20px;
+    }
+
+    .imageViewer.active {
+      display: flex;
+
+      animation:
+        viewerFade 0.25s ease;
+    }
+
+    @keyframes viewerFade {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .imageViewer img {
+      max-width: 100%;
+      max-height: 90vh;
+
+      object-fit: contain;
+
+      border-radius: 12px;
+
+      box-shadow:
+        0 0 45px rgba(212,175,55,0.15);
+    }
+
+    .closeViewer {
+      position: fixed;
+
+      top: 18px;
+      right: 18px;
+
+      width: 42px;
+      height: 42px;
+
+      border-radius: 50%;
+
+      border:
+        1px solid rgba(212,175,55,0.5);
+
+      background:
+        rgba(20,20,20,0.9);
+
+      color: #f5d76e;
+
+      font-size: 22px;
+
+      cursor: pointer;
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
 
     .footer {
       text-align: center;
+
       color: #666;
+
       font-size: 13px;
+
       margin: 30px 0;
+
       padding-bottom: 10px;
     }
 
-    .goldLine {
-      width: 70px;
-      height: 2px;
-      margin: 10px auto 0;
-      background: linear-gradient(90deg, transparent, #d4af37, transparent);
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media (max-width: 480px) {
+
+      .header {
+        padding: 19px 12px;
+      }
+
+      .logo {
+        font-size: 24px;
+      }
+
+      .container {
+        padding: 10px;
+        margin-top: 18px;
+      }
+
+      .card {
+        padding: 18px;
+        border-radius: 18px;
+      }
+
+      .card h1 {
+        font-size: 22px;
+      }
+
+      .post {
+        padding: 9px;
+        border-radius: 16px;
+      }
+
+      .commentItem {
+        padding: 10px;
+      }
+
+      .commentTime {
+        font-size: 10px;
+      }
+
     }
+
   </style>
 </head>
 
 <body>
 
+  <!-- =========================
+       HEADER
+  ========================= -->
+
   <div class="header">
-    <div class="logo">📸 Picture Chat</div>
-    <div class="subtitle">Premium Photo Sharing</div>
+
+    <div class="logo">
+      📸 Picture Chat
+    </div>
+
+    <div class="subtitle">
+      Premium Photo Sharing
+    </div>
+
     <div class="goldLine"></div>
+
   </div>
+
 
   <div class="container">
 
+
+    <!-- =========================
+         UPLOAD
+    ========================= -->
+
     <div class="card">
 
-      <h1>✨ স্বাগতম</h1>
+      <h1>
+        ✨ স্বাগতম
+      </h1>
 
       <p>
-        আপনার ছবি শেয়ার করুন এবং অন্যদের ছবিতে ❤️ Like ও 💬 Comment দিন।
+        আপনার ছবি শেয়ার করুন এবং অন্যদের ছবিতে
+        ❤️ Like ও 💬 Comment দিন।
       </p>
 
+
       <div class="fileBox">
+
         <input
           type="file"
           id="photoInput"
           accept="image/*"
         >
+
       </div>
 
-      <img id="preview" alt="ছবির প্রিভিউ">
+
+      <img
+        id="preview"
+        alt="ছবির প্রিভিউ"
+      >
+
 
       <button id="postButton">
         📤 পোস্ট করুন
       </button>
 
+
       <p id="message"></p>
 
     </div>
 
+
+    <!-- POSTS -->
+
     <div id="posts"></div>
+
 
     <div class="footer">
       🖤 Picture Chat • 2026 ✨
     </div>
+
+  </div>
+
+
+  <!-- =========================
+       FULLSCREEN VIEWER
+  ========================= -->
+
+  <div
+    id="imageViewer"
+    class="imageViewer"
+  >
+
+    <button
+      id="closeViewer"
+      class="closeViewer"
+    >
+      ×
+    </button>
+
+    <img
+      id="viewerImage"
+      alt="Full screen image"
+    >
 
   </div>
 
@@ -394,7 +851,8 @@
     const SUPABASE_KEY =
       "sb_publishable_af7xm3dnJhVO5XGXRIiyRA_zDOT230o";
 
-    const BUCKET = "photos";
+    const BUCKET =
+      "photos";
 
 
     const photoInput =
@@ -412,34 +870,55 @@
     const message =
       document.getElementById("message");
 
+    const imageViewer =
+      document.getElementById("imageViewer");
+
+    const viewerImage =
+      document.getElementById("viewerImage");
+
+    const closeViewer =
+      document.getElementById("closeViewer");
+
 
     let selectedFile = null;
 
 
     /* =========================
-       Auto Guest Name
+       Guest Name
     ========================= */
 
     function getGuestName() {
 
       let guestName =
-        localStorage.getItem("picture_chat_guest_name");
+        localStorage.getItem(
+          "picture_chat_guest_name"
+        );
+
 
       if (!guestName) {
 
         const randomNumber =
-          Math.floor(1000 + Math.random() * 9000);
+          Math.floor(
+            1000 +
+            Math.random() * 9000
+          );
+
 
         guestName =
-          "Guest-" + randomNumber;
+          "Guest-" +
+          randomNumber;
+
 
         localStorage.setItem(
           "picture_chat_guest_name",
           guestName
         );
+
       }
 
+
       return guestName;
+
     }
 
 
@@ -447,7 +926,9 @@
        Comment Time
     ========================= */
 
-    function formatCommentTime(dateString) {
+    function formatCommentTime(
+      dateString
+    ) {
 
       const date =
         new Date(dateString);
@@ -462,34 +943,57 @@
 
 
       if (seconds < 60) {
+
         return "এইমাত্র";
+
       }
 
 
       const minutes =
-        Math.floor(seconds / 60);
+        Math.floor(
+          seconds / 60
+        );
 
 
       if (minutes < 60) {
-        return minutes + " মিনিট আগে";
+
+        return (
+          minutes +
+          " মিনিট আগে"
+        );
+
       }
 
 
       const hours =
-        Math.floor(minutes / 60);
+        Math.floor(
+          minutes / 60
+        );
 
 
       if (hours < 24) {
-        return hours + " ঘণ্টা আগে";
+
+        return (
+          hours +
+          " ঘণ্টা আগে"
+        );
+
       }
 
 
       const days =
-        Math.floor(hours / 24);
+        Math.floor(
+          hours / 24
+        );
 
 
       if (days < 7) {
-        return days + " দিন আগে";
+
+        return (
+          days +
+          " দিন আগে"
+        );
+
       }
 
 
@@ -506,34 +1010,46 @@
 
 
     /* =========================
-       ছবি নির্বাচন
+       Image Preview
     ========================= */
 
     photoInput.addEventListener(
       "change",
       function () {
 
-        const file = this.files[0];
+        const file =
+          this.files[0];
+
 
         if (!file) {
+
           return;
+
         }
 
-        selectedFile = file;
 
-        const reader = new FileReader();
+        selectedFile =
+          file;
 
-        reader.onload = function (event) {
 
-          preview.src =
-            event.target.result;
+        const reader =
+          new FileReader();
 
-          preview.style.display =
-            "block";
 
-          message.innerText =
-            "✅ ছবি প্রস্তুত। এখন পোস্ট করুন.";
-        };
+        reader.onload =
+          function (event) {
+
+            preview.src =
+              event.target.result;
+
+            preview.style.display =
+              "block";
+
+            message.innerText =
+              "✅ ছবি প্রস্তুত। এখন পোস্ট করুন.";
+
+          };
+
 
         reader.readAsDataURL(file);
 
@@ -542,7 +1058,82 @@
 
 
     /* =========================
-       Comments লোড
+       Fullscreen Image
+    ========================= */
+
+    function openImageViewer(
+      imageUrl
+    ) {
+
+      viewerImage.src =
+        imageUrl;
+
+      imageViewer.classList.add(
+        "active"
+      );
+
+      document.body.style.overflow =
+        "hidden";
+
+    }
+
+
+    function closeImageViewer() {
+
+      imageViewer.classList.remove(
+        "active"
+      );
+
+      document.body.style.overflow =
+        "";
+
+      viewerImage.src =
+        "";
+
+    }
+
+
+    closeViewer.addEventListener(
+      "click",
+      closeImageViewer
+    );
+
+
+    imageViewer.addEventListener(
+      "click",
+      function (event) {
+
+        if (
+          event.target ===
+          imageViewer
+        ) {
+
+          closeImageViewer();
+
+        }
+
+      }
+    );
+
+
+    document.addEventListener(
+      "keydown",
+      function (event) {
+
+        if (
+          event.key === "Escape"
+        ) {
+
+          closeImageViewer();
+
+        }
+
+      }
+    );
+
+
+    /* =========================
+       Comments Load
     ========================= */
 
     async function loadComments(
@@ -562,19 +1153,25 @@
             "/rest/v1/photo_comments" +
             "?select=comment,created_at" +
             "&file_name=eq." +
-            encodeURIComponent(fileName) +
+            encodeURIComponent(
+              fileName
+            ) +
             "&order=created_at.desc",
             {
+
               method: "GET",
 
               headers: {
+
                 "apikey":
                   SUPABASE_KEY,
 
                 "Authorization":
                   "Bearer " +
                   SUPABASE_KEY
+
               }
+
             }
           );
 
@@ -592,7 +1189,8 @@
           await response.json();
 
 
-        commentsList.innerHTML = "";
+        commentsList.innerHTML =
+          "";
 
 
         if (
@@ -604,105 +1202,136 @@
             "<div class='noComments'>এখনও কোনো Comment নেই।</div>";
 
           return;
+
         }
 
 
-        comments.forEach(function(item) {
+        comments.forEach(
+          function (item) {
 
-          const commentItem =
-            document.createElement("div");
-
-          commentItem.className =
-            "commentItem";
-
-
-          const parts =
-            item.comment.split("|||");
+            const commentItem =
+              document.createElement(
+                "div"
+              );
 
 
-          let userName =
-            "Guest";
-
-          let userComment =
-            item.comment;
+            commentItem.className =
+              "commentItem";
 
 
-          if (parts.length >= 2) {
-
-            userName =
-              parts[0].trim();
-
-            userComment =
-              parts
-                .slice(1)
-                .join("|||")
-                .trim();
-
-          }
+            const parts =
+              item.comment.split(
+                "|||"
+              );
 
 
-          const commentHeader =
-            document.createElement("div");
-
-          commentHeader.className =
-            "commentHeader";
+            let userName =
+              "Guest";
 
 
-          const commentName =
-            document.createElement("div");
-
-          commentName.className =
-            "commentName";
-
-          commentName.innerText =
-            "👤 " + userName;
+            let userComment =
+              item.comment;
 
 
-          const commentTime =
-            document.createElement("div");
+            if (
+              parts.length >= 2
+            ) {
 
-          commentTime.className =
-            "commentTime";
+              userName =
+                parts[0].trim();
 
-          commentTime.innerText =
-            formatCommentTime(
-              item.created_at
+
+              userComment =
+                parts
+                  .slice(1)
+                  .join("|||")
+                  .trim();
+
+            }
+
+
+            const commentHeader =
+              document.createElement(
+                "div"
+              );
+
+
+            commentHeader.className =
+              "commentHeader";
+
+
+            const commentName =
+              document.createElement(
+                "div"
+              );
+
+
+            commentName.className =
+              "commentName";
+
+
+            commentName.innerText =
+              "👤 " +
+              userName;
+
+
+            const commentTime =
+              document.createElement(
+                "div"
+              );
+
+
+            commentTime.className =
+              "commentTime";
+
+
+            commentTime.innerText =
+              formatCommentTime(
+                item.created_at
+              );
+
+
+            commentHeader.appendChild(
+              commentName
             );
 
 
-          commentHeader.appendChild(
-            commentName
-          );
-
-          commentHeader.appendChild(
-            commentTime
-          );
+            commentHeader.appendChild(
+              commentTime
+            );
 
 
-          const commentText =
-            document.createElement("div");
-
-          commentText.className =
-            "commentText";
-
-          commentText.innerText =
-            "💬 " + userComment;
+            const commentText =
+              document.createElement(
+                "div"
+              );
 
 
-          commentItem.appendChild(
-            commentHeader
-          );
-
-          commentItem.appendChild(
-            commentText
-          );
+            commentText.className =
+              "commentText";
 
 
-          commentsList.appendChild(
-            commentItem
-          );
+            commentText.innerText =
+              "💬 " +
+              userComment;
 
-        });
+
+            commentItem.appendChild(
+              commentHeader
+            );
+
+
+            commentItem.appendChild(
+              commentText
+            );
+
+
+            commentsList.appendChild(
+              commentItem
+            );
+
+          }
+        );
 
 
       } catch (error) {
@@ -711,6 +1340,7 @@
           "Comment load error:",
           error
         );
+
 
         commentsList.innerHTML =
           "<div class='noComments'>❌ Comment লোড হয়নি</div>";
@@ -721,7 +1351,7 @@
 
 
     /* =========================
-       ছবি লোড
+       Load Posts
     ========================= */
 
     async function loadPosts() {
@@ -738,9 +1368,11 @@
             "/storage/v1/object/list/" +
             BUCKET,
             {
+
               method: "POST",
 
               headers: {
+
                 "Authorization":
                   "Bearer " +
                   SUPABASE_KEY,
@@ -750,28 +1382,37 @@
 
                 "Content-Type":
                   "application/json"
+
               },
 
               body: JSON.stringify({
+
                 prefix: "",
+
                 limit: 100,
+
                 sortBy: {
-                  column: "created_at",
-                  order: "desc"
+
+                  column:
+                    "created_at",
+
+                  order:
+                    "desc"
+
                 }
+
               })
+
             }
           );
 
 
         if (!response.ok) {
 
-          const errorText =
-            await response.text();
-
           throw new Error(
-            errorText
+            await response.text()
           );
+
         }
 
 
@@ -779,7 +1420,8 @@
           await response.json();
 
 
-        posts.innerHTML = "";
+        posts.innerHTML =
+          "";
 
 
         if (
@@ -791,6 +1433,7 @@
             "<p style='text-align:center;color:#aaa;'>এখনও কোনো ছবি নেই।</p>";
 
           return;
+
         }
 
 
@@ -799,7 +1442,9 @@
         ) {
 
           if (!file.name) {
+
             continue;
+
           }
 
 
@@ -816,7 +1461,9 @@
           let likes = 0;
 
 
-          /* Like count */
+          /* =========================
+             Like Count
+          ========================= */
 
           try {
 
@@ -830,16 +1477,20 @@
                   file.name
                 ),
                 {
+
                   method: "GET",
 
                   headers: {
+
                     "apikey":
                       SUPABASE_KEY,
 
                     "Authorization":
                       "Bearer " +
                       SUPABASE_KEY
+
                   }
+
                 }
               );
 
@@ -866,25 +1517,40 @@
 
             }
 
-          } catch (e) {
+          } catch (error) {
 
             console.log(
               "Like count error:",
-              e
+              error
             );
 
           }
 
 
-          /* Post */
+          /* =========================
+             Post
+          ========================= */
 
           const post =
             document.createElement(
               "div"
             );
 
+
           post.className =
             "post";
+
+
+          /* Image Wrapper */
+
+          const imageWrap =
+            document.createElement(
+              "div"
+            );
+
+
+          imageWrap.className =
+            "postImageWrap";
 
 
           /* Image */
@@ -894,39 +1560,65 @@
               "img"
             );
 
+
           image.src =
             imageUrl;
 
+
           image.alt =
             "Shared photo";
+
 
           image.loading =
             "lazy";
 
 
-          /* Like button */
+          image.addEventListener(
+            "click",
+            function () {
+
+              openImageViewer(
+                imageUrl
+              );
+
+            }
+          );
+
+
+          imageWrap.appendChild(
+            image
+          );
+
+
+          /* =========================
+             Like Button
+          ========================= */
 
           const likeButton =
             document.createElement(
               "button"
             );
 
+
           likeButton.className =
             "likeButton";
+
 
           likeButton.innerText =
             "❤️ Like";
 
 
-          /* Like count */
+          /* Like Count */
 
           const likeCount =
             document.createElement(
               "div"
             );
 
+
           likeCount.className =
             "likeCount";
+
 
           likeCount.innerText =
             "❤️ " +
@@ -934,7 +1626,7 @@
             " Likes";
 
 
-          /* Like click */
+          /* Like Click */
 
           likeButton.addEventListener(
             "click",
@@ -942,6 +1634,7 @@
 
               likeButton.disabled =
                 true;
+
 
               likeButton.innerText =
                 "⏳ Like হচ্ছে...";
@@ -958,9 +1651,11 @@
                       file.name
                     ),
                     {
+
                       method: "PATCH",
 
                       headers: {
+
                         "apikey":
                           SUPABASE_KEY,
 
@@ -973,12 +1668,16 @@
 
                         "Prefer":
                           "return=representation"
+
                       },
 
                       body: JSON.stringify({
+
                         likes:
                           likes + 1
+
                       })
+
                     }
                   );
 
@@ -1023,7 +1722,7 @@
                       "❤️ Like";
 
                   },
-                  700
+                  800
                 );
 
 
@@ -1033,6 +1732,7 @@
                   "Like error:",
                   error
                 );
+
 
                 likeButton.innerText =
                   "❌ আবার চেষ্টা করুন";
@@ -1048,7 +1748,7 @@
 
 
           /* =========================
-             Comment section
+             Comment Box
           ========================= */
 
           const commentBox =
@@ -1056,65 +1756,133 @@
               "div"
             );
 
+
           commentBox.className =
             "commentBox";
 
+
+          /* Comment Top */
+
+          const commentTop =
+            document.createElement(
+              "div"
+            );
+
+
+          commentTop.className =
+            "commentTop";
+
+
+          /* Title */
 
           const commentTitle =
             document.createElement(
               "div"
             );
 
+
           commentTitle.className =
             "commentTitle";
+
 
           commentTitle.innerText =
             "💬 Comments";
 
 
-          /* Comment input */
+          /* Refresh */
+
+          const refreshButton =
+            document.createElement(
+              "button"
+            );
+
+
+          refreshButton.className =
+            "refreshComments";
+
+
+          refreshButton.innerText =
+            "🔄 Refresh";
+
+
+          /* Comment Input */
 
           const commentInput =
             document.createElement(
               "textarea"
             );
 
+
           commentInput.className =
             "commentInput";
 
+
           commentInput.maxLength =
             500;
+
 
           commentInput.placeholder =
             "💬 আপনার Comment লিখুন...";
 
 
-          /* Comment button */
+          /* Comment Button */
 
           const commentButton =
             document.createElement(
               "button"
             );
 
+
           commentButton.className =
             "commentButton";
+
 
           commentButton.innerText =
             "💬 Comment করুন";
 
 
-          /* Comments list */
+          /* Comments List */
 
           const commentsList =
             document.createElement(
               "div"
             );
 
+
           commentsList.className =
             "commentsList";
 
 
-          /* Comment submit */
+          /* Refresh Click */
+
+          refreshButton.addEventListener(
+            "click",
+            async function () {
+
+              refreshButton.disabled =
+                true;
+
+              refreshButton.innerText =
+                "⏳ Loading...";
+
+
+              await loadComments(
+                file.name,
+                commentsList
+              );
+
+
+              refreshButton.disabled =
+                false;
+
+              refreshButton.innerText =
+                "🔄 Refresh";
+
+            }
+          );
+
+
+          /* Comment Submit */
 
           commentButton.addEventListener(
             "click",
@@ -1129,11 +1897,13 @@
                 commentInput.focus();
 
                 return;
+
               }
 
 
               commentButton.disabled =
                 true;
+
 
               commentButton.innerText =
                 "⏳ Comment হচ্ছে...";
@@ -1156,9 +1926,11 @@
                     SUPABASE_URL +
                     "/rest/v1/photo_comments",
                     {
+
                       method: "POST",
 
                       headers: {
+
                         "apikey":
                           SUPABASE_KEY,
 
@@ -1171,15 +1943,19 @@
 
                         "Prefer":
                           "return=minimal"
+
                       },
 
                       body: JSON.stringify({
+
                         file_name:
                           file.name,
 
                         comment:
                           savedComment
+
                       })
+
                     }
                   );
 
@@ -1212,6 +1988,7 @@
                   error
                 );
 
+
                 alert(
                   "❌ Comment পোস্ট হয়নি"
                 );
@@ -1222,6 +1999,7 @@
               commentButton.disabled =
                 false;
 
+
               commentButton.innerText =
                 "💬 Comment করুন";
 
@@ -1229,38 +2007,82 @@
           );
 
 
-          commentBox.appendChild(
+          /* =========================
+             Enter Key
+          ========================= */
+
+          commentInput.addEventListener(
+            "keydown",
+            function (event) {
+
+              if (
+                event.key === "Enter" &&
+                !event.shiftKey
+              ) {
+
+                event.preventDefault();
+
+                commentButton.click();
+
+              }
+
+            }
+          );
+
+
+          /* Build Comment Top */
+
+          commentTop.appendChild(
             commentTitle
           );
+
+
+          commentTop.appendChild(
+            refreshButton
+          );
+
+
+          commentBox.appendChild(
+            commentTop
+          );
+
 
           commentBox.appendChild(
             commentInput
           );
 
+
           commentBox.appendChild(
             commentButton
           );
+
 
           commentBox.appendChild(
             commentsList
           );
 
 
+          /* Build Post */
+
           post.appendChild(
-            image
+            imageWrap
           );
+
 
           post.appendChild(
             likeButton
           );
 
+
           post.appendChild(
             likeCount
           );
 
+
           post.appendChild(
             commentBox
           );
+
 
           posts.appendChild(
             post
@@ -1292,7 +2114,7 @@
 
 
     /* =========================
-       নতুন ছবি পোস্ট
+       Upload Photo
     ========================= */
 
     postButton.addEventListener(
@@ -1305,11 +2127,13 @@
             "⚠️ আগে একটি ছবি নির্বাচন করুন।";
 
           return;
+
         }
 
 
         postButton.disabled =
           true;
+
 
         message.innerText =
           "⏳ ছবি আপলোড হচ্ছে...";
@@ -1344,9 +2168,11 @@
             await fetch(
               uploadUrl,
               {
+
                 method: "POST",
 
                 headers: {
+
                   "Authorization":
                     "Bearer " +
                     SUPABASE_KEY,
@@ -1357,10 +2183,12 @@
                   "Content-Type":
                     selectedFile.type ||
                     "application/octet-stream"
+
                 },
 
                 body:
                   selectedFile
+
               }
             );
 
@@ -1376,16 +2204,18 @@
           }
 
 
-          /* Database record */
+          /* Database */
 
           const dbResponse =
             await fetch(
               SUPABASE_URL +
               "/rest/v1/photo_posts",
               {
+
                 method: "POST",
 
                 headers: {
+
                   "Authorization":
                     "Bearer " +
                     SUPABASE_KEY,
@@ -1398,15 +2228,19 @@
 
                   "Prefer":
                     "return=minimal"
+
                 },
 
                 body: JSON.stringify({
+
                   file_name:
                     fileName,
 
                   likes:
                     0
+
                 })
+
               }
             );
 
@@ -1430,14 +2264,18 @@
           selectedFile =
             null;
 
+
           photoInput.value =
             "";
+
 
           preview.src =
             "";
 
+
           preview.style.display =
             "none";
+
 
           postButton.disabled =
             false;
@@ -1468,7 +2306,7 @@
 
 
     /* =========================
-       Website start
+       Start
     ========================= */
 
     loadPosts();
