@@ -74,6 +74,62 @@
       line-height: 1.6;
     }
 
+    /* =========================
+       User Name
+    ========================= */
+
+    .userNameBox {
+      margin-top: 15px;
+      padding: 13px;
+      border: 1px solid rgba(212, 175, 55, 0.22);
+      border-radius: 14px;
+      background: rgba(212, 175, 55, 0.04);
+    }
+
+    .userNameTitle {
+      color: #f5d76e;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    #userNameInput {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      background: #0a0a0a;
+      color: #fff;
+      outline: none;
+      font-size: 14px;
+    }
+
+    #userNameInput:focus {
+      border-color: #d4af37;
+    }
+
+    #saveNameButton {
+      width: 100%;
+      margin-top: 8px;
+      padding: 10px;
+      border: 1px solid #c9a227;
+      border-radius: 10px;
+      background: #17130a;
+      color: #f5d76e;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #saveNameButton:hover {
+      background: #211b0c;
+    }
+
+    #savedName {
+      margin-top: 8px;
+      color: #aaa;
+      font-size: 13px;
+    }
+
     .fileBox {
       margin-top: 18px;
       padding: 14px;
@@ -190,7 +246,9 @@
       font-size: 13px;
     }
 
-    /* Comments */
+    /* =========================
+       Comments
+    ========================= */
 
     .commentBox {
       margin-top: 15px;
@@ -205,9 +263,10 @@
       margin-bottom: 10px;
     }
 
-    .nameInput,
     .commentInput {
       width: 100%;
+      min-height: 42px;
+      resize: vertical;
       padding: 11px 12px;
       border-radius: 10px;
       border: 1px solid rgba(212, 175, 55, 0.3);
@@ -218,16 +277,6 @@
       font-family: Arial, sans-serif;
     }
 
-    .nameInput {
-      margin-bottom: 8px;
-    }
-
-    .commentInput {
-      min-height: 42px;
-      resize: vertical;
-    }
-
-    .nameInput:focus,
     .commentInput:focus {
       border-color: #d4af37;
     }
@@ -315,6 +364,30 @@
         আপনার ছবি শেয়ার করুন এবং অন্যদের ছবিতে ❤️ Like ও 💬 Comment দিন।
       </p>
 
+      <!-- নাম একবার সেট করার জায়গা -->
+
+      <div class="userNameBox">
+
+        <div class="userNameTitle">
+          👤 আপনার নাম
+        </div>
+
+        <input
+          type="text"
+          id="userNameInput"
+          maxlength="30"
+          placeholder="আপনার নাম লিখুন..."
+        >
+
+        <button id="saveNameButton">
+          💾 নাম সেভ করুন
+        </button>
+
+        <div id="savedName"></div>
+
+      </div>
+
+
       <div class="fileBox">
         <input
           type="file"
@@ -353,6 +426,93 @@
     const BUCKET = "photos";
 
 
+    /* =========================
+       User Name
+    ========================= */
+
+    const userNameInput =
+      document.getElementById("userNameInput");
+
+    const saveNameButton =
+      document.getElementById("saveNameButton");
+
+    const savedName =
+      document.getElementById("savedName");
+
+
+    let currentUserName =
+      localStorage.getItem(
+        "pictureChatName"
+      ) || "";
+
+
+    function showSavedName() {
+
+      if (currentUserName) {
+
+        userNameInput.value =
+          currentUserName;
+
+        savedName.innerText =
+          "✅ আপনার নাম: " +
+          currentUserName;
+
+        saveNameButton.innerText =
+          "✏️ নাম পরিবর্তন করুন";
+
+      }
+
+    }
+
+
+    saveNameButton.addEventListener(
+      "click",
+      function () {
+
+        const name =
+          userNameInput.value.trim();
+
+
+        if (!name) {
+
+          savedName.innerText =
+            "⚠️ আগে আপনার নাম লিখুন।";
+
+          userNameInput.focus();
+
+          return;
+        }
+
+
+        currentUserName =
+          name;
+
+
+        localStorage.setItem(
+          "pictureChatName",
+          currentUserName
+        );
+
+
+        savedName.innerText =
+          "✅ আপনার নাম: " +
+          currentUserName;
+
+
+        saveNameButton.innerText =
+          "✏️ নাম পরিবর্তন করুন";
+
+      }
+    );
+
+
+    showSavedName();
+
+
+    /* =========================
+       Main Elements
+    ========================= */
+
     const photoInput =
       document.getElementById("photoInput");
 
@@ -388,17 +548,24 @@
 
         selectedFile = file;
 
-        const reader = new FileReader();
+        const reader =
+          new FileReader();
 
-        reader.onload = function (event) {
 
-          preview.src = event.target.result;
+        reader.onload =
+          function (event) {
 
-          preview.style.display = "block";
+            preview.src =
+              event.target.result;
 
-          message.innerText =
-            "✅ ছবি প্রস্তুত। এখন পোস্ট করুন.";
-        };
+            preview.style.display =
+              "block";
+
+            message.innerText =
+              "✅ ছবি প্রস্তুত। এখন পোস্ট করুন.";
+
+          };
+
 
         reader.readAsDataURL(file);
 
@@ -469,80 +636,97 @@
             "<div class='noComments'>এখনও কোনো Comment নেই।</div>";
 
           return;
+
         }
 
 
-        comments.forEach(function(item) {
+        comments.forEach(
+          function(item) {
 
-          const commentItem =
-            document.createElement("div");
+            const commentItem =
+              document.createElement(
+                "div"
+              );
 
-          commentItem.className =
-            "commentItem";
-
-
-          /*
-            নতুন Comment-এর format:
-
-            Name|||Comment
-
-            পুরোনো Comment হলে
-            শুধু Comment দেখাবে।
-          */
-
-          const parts =
-            item.comment.split("|||");
+            commentItem.className =
+              "commentItem";
 
 
-          let userName = "Anonymous";
-          let userComment = item.comment;
+            /*
+              নতুন Comment:
+
+              Name|||Comment
+
+              পুরোনো Comment:
+              শুধু Comment
+            */
+
+            const parts =
+              item.comment.split(
+                "|||"
+              );
 
 
-          if (parts.length >= 2) {
+            let userName =
+              "Anonymous";
 
-            userName =
-              parts[0].trim();
+            let userComment =
+              item.comment;
 
-            userComment =
-              parts.slice(1).join("|||").trim();
+
+            if (parts.length >= 2) {
+
+              userName =
+                parts[0].trim();
+
+              userComment =
+                parts
+                  .slice(1)
+                  .join("|||")
+                  .trim();
+
+            }
+
+
+            const commentName =
+              document.createElement(
+                "div"
+              );
+
+            commentName.className =
+              "commentName";
+
+            commentName.innerText =
+              "👤 " + userName;
+
+
+            const commentText =
+              document.createElement(
+                "div"
+              );
+
+            commentText.className =
+              "commentText";
+
+            commentText.innerText =
+              "💬 " + userComment;
+
+
+            commentItem.appendChild(
+              commentName
+            );
+
+            commentItem.appendChild(
+              commentText
+            );
+
+
+            commentsList.appendChild(
+              commentItem
+            );
 
           }
-
-
-          const commentName =
-            document.createElement("div");
-
-          commentName.className =
-            "commentName";
-
-          commentName.innerText =
-            "👤 " + userName;
-
-
-          const commentText =
-            document.createElement("div");
-
-          commentText.className =
-            "commentText";
-
-          commentText.innerText =
-            "💬 " + userComment;
-
-
-          commentItem.appendChild(
-            commentName
-          );
-
-          commentItem.appendChild(
-            commentText
-          );
-
-
-          commentsList.appendChild(
-            commentItem
-          );
-
-        });
+        );
 
 
       } catch (error) {
@@ -551,6 +735,7 @@
           "Comment load error:",
           error
         );
+
 
         commentsList.innerHTML =
           "<div class='noComments'>❌ Comment লোড হয়নি</div>";
@@ -572,34 +757,41 @@
 
       try {
 
-        const response = await fetch(
-          SUPABASE_URL +
-          "/storage/v1/object/list/" +
-          BUCKET,
-          {
-            method: "POST",
+        const response =
+          await fetch(
+            SUPABASE_URL +
+            "/storage/v1/object/list/" +
+            BUCKET,
+            {
+              method: "POST",
 
-            headers: {
-              "Authorization":
-                "Bearer " + SUPABASE_KEY,
+              headers: {
+                "Authorization":
+                  "Bearer " +
+                  SUPABASE_KEY,
 
-              "apikey":
-                SUPABASE_KEY,
+                "apikey":
+                  SUPABASE_KEY,
 
-              "Content-Type":
-                "application/json"
-            },
+                "Content-Type":
+                  "application/json"
+              },
 
-            body: JSON.stringify({
-              prefix: "",
-              limit: 100,
-              sortBy: {
-                column: "created_at",
-                order: "desc"
-              }
-            })
-          }
-        );
+              body: JSON.stringify({
+                prefix: "",
+                limit: 100,
+
+                sortBy: {
+                  column:
+                    "created_at",
+
+                  order:
+                    "desc"
+                }
+
+              })
+            }
+          );
 
 
         if (!response.ok) {
@@ -607,7 +799,10 @@
           const errorText =
             await response.text();
 
-          throw new Error(errorText);
+          throw new Error(
+            errorText
+          );
+
         }
 
 
@@ -618,16 +813,22 @@
         posts.innerHTML = "";
 
 
-        if (!files || files.length === 0) {
+        if (
+          !files ||
+          files.length === 0
+        ) {
 
           posts.innerHTML =
             "<p style='text-align:center;color:#aaa;'>এখনও কোনো ছবি নেই।</p>";
 
           return;
+
         }
 
 
-        for (const file of files) {
+        for (
+          const file of files
+        ) {
 
           if (!file.name) {
             continue;
@@ -639,13 +840,17 @@
             "/storage/v1/object/public/" +
             BUCKET +
             "/" +
-            encodeURIComponent(file.name);
+            encodeURIComponent(
+              file.name
+            );
 
 
           let likes = 0;
 
 
-          /* Like count */
+          /* =========================
+             Like count
+          ========================= */
 
           try {
 
@@ -655,7 +860,9 @@
                 "/rest/v1/photo_posts" +
                 "?select=likes" +
                 "&file_name=eq." +
-                encodeURIComponent(file.name),
+                encodeURIComponent(
+                  file.name
+                ),
                 {
                   method: "GET",
 
@@ -676,13 +883,16 @@
               const likeData =
                 await likeResponse.json();
 
+
               if (
                 likeData.length > 0 &&
                 likeData[0].likes != null
               ) {
 
                 likes =
-                  Number(likeData[0].likes);
+                  Number(
+                    likeData[0].likes
+                  );
 
               }
 
@@ -698,30 +908,44 @@
           }
 
 
-          /* Post */
+          /* =========================
+             Post
+          ========================= */
 
           const post =
-            document.createElement("div");
+            document.createElement(
+              "div"
+            );
 
-          post.className = "post";
+          post.className =
+            "post";
 
 
           /* Image */
 
           const image =
-            document.createElement("img");
+            document.createElement(
+              "img"
+            );
 
-          image.src = imageUrl;
+          image.src =
+            imageUrl;
 
-          image.alt = "Shared photo";
+          image.alt =
+            "Shared photo";
 
-          image.loading = "lazy";
+          image.loading =
+            "lazy";
 
 
-          /* Like button */
+          /* =========================
+             Like Button
+          ========================= */
 
           const likeButton =
-            document.createElement("button");
+            document.createElement(
+              "button"
+            );
 
           likeButton.className =
             "likeButton";
@@ -730,25 +954,30 @@
             "❤️ Like";
 
 
-          /* Like count */
+          /* Like Count */
 
           const likeCount =
-            document.createElement("div");
+            document.createElement(
+              "div"
+            );
 
           likeCount.className =
             "likeCount";
 
           likeCount.innerText =
-            "❤️ " + likes + " Likes";
+            "❤️ " +
+            likes +
+            " Likes";
 
 
-          /* Like click */
+          /* Like Click */
 
           likeButton.addEventListener(
             "click",
             async function () {
 
-              likeButton.disabled = true;
+              likeButton.disabled =
+                true;
 
               likeButton.innerText =
                 "⏳ Like হচ্ছে...";
@@ -761,9 +990,12 @@
                     SUPABASE_URL +
                     "/rest/v1/photo_posts" +
                     "?file_name=eq." +
-                    encodeURIComponent(file.name),
+                    encodeURIComponent(
+                      file.name
+                    ),
                     {
-                      method: "PATCH",
+                      method:
+                        "PATCH",
 
                       headers: {
                         "apikey":
@@ -780,14 +1012,18 @@
                           "return=representation"
                       },
 
-                      body: JSON.stringify({
-                        likes: likes + 1
-                      })
+                      body:
+                        JSON.stringify({
+                          likes:
+                            likes + 1
+                        })
                     }
                   );
 
 
-                if (!updateResponse.ok) {
+                if (
+                  !updateResponse.ok
+                ) {
 
                   throw new Error(
                     await updateResponse.text()
@@ -797,6 +1033,7 @@
 
 
                 likes++;
+
 
                 likeCount.innerText =
                   "❤️ " +
@@ -815,31 +1052,37 @@
                   error
                 );
 
+
                 likeButton.innerText =
                   "❌ আবার চেষ্টা করুন";
 
               }
 
 
-              likeButton.disabled = false;
+              likeButton.disabled =
+                false;
 
             }
           );
 
 
           /* =========================
-             Comment section
+             Comment Section
           ========================= */
 
           const commentBox =
-            document.createElement("div");
+            document.createElement(
+              "div"
+            );
 
           commentBox.className =
             "commentBox";
 
 
           const commentTitle =
-            document.createElement("div");
+            document.createElement(
+              "div"
+            );
 
           commentTitle.className =
             "commentTitle";
@@ -848,28 +1091,16 @@
             "💬 Comments";
 
 
-          /* Name input */
+          /*
+            এখানে আর Name Input নেই।
+            নাম উপরে একবার সেট করা হবে।
+          */
 
-          const nameInput =
-            document.createElement("input");
-
-          nameInput.className =
-            "nameInput";
-
-          nameInput.type =
-            "text";
-
-          nameInput.maxLength =
-            30;
-
-          nameInput.placeholder =
-            "👤 আপনার নাম লিখুন...";
-
-
-          /* Comment input */
 
           const commentInput =
-            document.createElement("textarea");
+            document.createElement(
+              "textarea"
+            );
 
           commentInput.className =
             "commentInput";
@@ -881,10 +1112,10 @@
             "💬 আপনার Comment লিখুন...";
 
 
-          /* Comment button */
-
           const commentButton =
-            document.createElement("button");
+            document.createElement(
+              "button"
+            );
 
           commentButton.className =
             "commentButton";
@@ -893,33 +1124,42 @@
             "💬 Comment করুন";
 
 
-          /* Comments list */
-
           const commentsList =
-            document.createElement("div");
+            document.createElement(
+              "div"
+            );
 
           commentsList.className =
             "commentsList";
 
 
-          /* Comment submit */
+          /* =========================
+             Comment Submit
+          ========================= */
 
           commentButton.addEventListener(
             "click",
             async function () {
 
-              const userName =
-                nameInput.value.trim();
-
               const comment =
                 commentInput.value.trim();
 
 
-              if (!userName) {
+              /*
+                আগে নাম সেট করা হয়েছে কিনা
+                চেক করা হচ্ছে।
+              */
 
-                nameInput.focus();
+              if (!currentUserName) {
+
+                alert(
+                  "⚠️ আগে উপরে আপনার নাম সেট করুন।"
+                );
+
+                userNameInput.focus();
 
                 return;
+
               }
 
 
@@ -928,10 +1168,12 @@
                 commentInput.focus();
 
                 return;
+
               }
 
 
-              commentButton.disabled = true;
+              commentButton.disabled =
+                true;
 
               commentButton.innerText =
                 "⏳ Comment হচ্ছে...";
@@ -940,15 +1182,14 @@
               try {
 
                 /*
-                  Name এবং Comment
-                  একসাথে Database-এ রাখা হচ্ছে।
+                  Name + Comment
 
                   Format:
                   Name|||Comment
                 */
 
                 const savedComment =
-                  userName +
+                  currentUserName +
                   "|||" +
                   comment;
 
@@ -958,7 +1199,8 @@
                     SUPABASE_URL +
                     "/rest/v1/photo_comments",
                     {
-                      method: "POST",
+                      method:
+                        "POST",
 
                       headers: {
                         "apikey":
@@ -975,18 +1217,21 @@
                           "return=minimal"
                       },
 
-                      body: JSON.stringify({
-                        file_name:
-                          file.name,
+                      body:
+                        JSON.stringify({
+                          file_name:
+                            file.name,
 
-                        comment:
-                          savedComment
-                      })
+                          comment:
+                            savedComment
+                        })
                     }
                   );
 
 
-                if (!commentResponse.ok) {
+                if (
+                  !commentResponse.ok
+                ) {
 
                   throw new Error(
                     await commentResponse.text()
@@ -995,12 +1240,9 @@
                 }
 
 
-                commentInput.value = "";
+                commentInput.value =
+                  "";
 
-                /*
-                  নামটি আবার ব্যবহার করা যাবে,
-                  তাই Name input খালি করা হচ্ছে না।
-                */
 
                 await loadComments(
                   file.name,
@@ -1015,6 +1257,7 @@
                   error
                 );
 
+
                 alert(
                   "❌ Comment পোস্ট হয়নি"
                 );
@@ -1022,7 +1265,8 @@
               }
 
 
-              commentButton.disabled = false;
+              commentButton.disabled =
+                false;
 
               commentButton.innerText =
                 "💬 Comment করুন";
@@ -1031,12 +1275,12 @@
           );
 
 
-          commentBox.appendChild(
-            commentTitle
-          );
+          /* =========================
+             Comment UI
+          ========================= */
 
           commentBox.appendChild(
-            nameInput
+            commentTitle
           );
 
           commentBox.appendChild(
@@ -1052,18 +1296,33 @@
           );
 
 
-          post.appendChild(image);
+          /* =========================
+             Post UI
+          ========================= */
 
-          post.appendChild(likeButton);
+          post.appendChild(
+            image
+          );
 
-          post.appendChild(likeCount);
+          post.appendChild(
+            likeButton
+          );
 
-          post.appendChild(commentBox);
+          post.appendChild(
+            likeCount
+          );
 
-          posts.appendChild(post);
+          post.appendChild(
+            commentBox
+          );
 
 
-          /* Load comments */
+          posts.appendChild(
+            post
+          );
+
+
+          /* Load Comments */
 
           await loadComments(
             file.name,
@@ -1103,10 +1362,12 @@
             "⚠️ আগে একটি ছবি নির্বাচন করুন।";
 
           return;
+
         }
 
 
-        postButton.disabled = true;
+        postButton.disabled =
+          true;
 
         message.innerText =
           "⏳ ছবি আপলোড হচ্ছে...";
@@ -1132,14 +1393,17 @@
             "/storage/v1/object/" +
             BUCKET +
             "/" +
-            encodeURIComponent(fileName);
+            encodeURIComponent(
+              fileName
+            );
 
 
           const uploadResponse =
             await fetch(
               uploadUrl,
               {
-                method: "POST",
+                method:
+                  "POST",
 
                 headers: {
                   "Authorization":
@@ -1154,12 +1418,15 @@
                     "application/octet-stream"
                 },
 
-                body: selectedFile
+                body:
+                  selectedFile
               }
             );
 
 
-          if (!uploadResponse.ok) {
+          if (
+            !uploadResponse.ok
+          ) {
 
             throw new Error(
               await uploadResponse.text()
@@ -1175,7 +1442,8 @@
               SUPABASE_URL +
               "/rest/v1/photo_posts",
               {
-                method: "POST",
+                method:
+                  "POST",
 
                 headers: {
                   "Authorization":
@@ -1192,15 +1460,21 @@
                     "return=minimal"
                 },
 
-                body: JSON.stringify({
-                  file_name: fileName,
-                  likes: 0
-                })
+                body:
+                  JSON.stringify({
+                    file_name:
+                      fileName,
+
+                    likes:
+                      0
+                  })
               }
             );
 
 
-          if (!dbResponse.ok) {
+          if (
+            !dbResponse.ok
+          ) {
 
             console.log(
               "Database error:",
@@ -1214,15 +1488,20 @@
             "🎉 ছবি সফলভাবে পোস্ট হয়েছে!";
 
 
-          selectedFile = null;
+          selectedFile =
+            null;
 
-          photoInput.value = "";
+          photoInput.value =
+            "";
 
-          preview.src = "";
+          preview.src =
+            "";
 
-          preview.style.display = "none";
+          preview.style.display =
+            "none";
 
-          postButton.disabled = false;
+          postButton.disabled =
+            false;
 
 
           await loadPosts();
@@ -1240,7 +1519,8 @@
             "❌ আপলোড হয়নি";
 
 
-          postButton.disabled = false;
+          postButton.disabled =
+            false;
 
         }
 
@@ -1249,7 +1529,7 @@
 
 
     /* =========================
-       Website start
+       Website Start
     ========================= */
 
     loadPosts();
