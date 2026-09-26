@@ -336,6 +336,103 @@ button:disabled{
   );
 }
 
+/* ================================
+   ADMIN NOTIFICATION
+================================ */
+
+.admin-top-bar{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.notification-btn{
+  position:relative;
+  background:#222;
+  color:#fff;
+  border:1px solid #5a4a20;
+  font-size:20px;
+  padding:9px 13px;
+}
+
+.notification-badge{
+  position:absolute;
+  top:-7px;
+  right:-7px;
+  min-width:20px;
+  height:20px;
+  padding:2px 5px;
+  border-radius:20px;
+  background:#e53935;
+  color:#fff;
+  font-size:11px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:2px solid #111;
+}
+
+.notification-panel{
+  margin-top:15px;
+  background:#0e0e0e;
+  border:1px solid #4b401f;
+  border-radius:14px;
+  padding:10px;
+  max-height:360px;
+  overflow-y:auto;
+}
+
+.notification-title{
+  color:#d5af37;
+  font-weight:bold;
+  padding:8px;
+  border-bottom:1px solid #333;
+  margin-bottom:5px;
+}
+
+.notification-item{
+  background:#181818;
+  border:1px solid #292929;
+  border-radius:10px;
+  padding:11px;
+  margin-top:8px;
+  cursor:pointer;
+}
+
+.notification-item:hover{
+  background:#222;
+}
+
+.notification-item.unread{
+  border-color:#665321;
+  background:#211d11;
+}
+
+.notification-name{
+  font-weight:bold;
+  color:#f0cf62;
+}
+
+.notification-comment{
+  color:#ddd;
+  margin-top:5px;
+  word-break:break-word;
+}
+
+.notification-photo{
+  color:#999;
+  font-size:12px;
+  margin-top:6px;
+}
+
+.notification-time{
+  color:#777;
+  font-size:11px;
+  margin-top:4px;
+}
+
 @media(max-width:600px){
 
   .logo{
@@ -404,12 +501,48 @@ button:disabled{
       👑 Admin হিসেবে লগইন করা আছে
     </div>
 
-    <button
-      class="logout-btn"
-      onclick="logoutAdmin()"
+    <div class="admin-top-bar">
+
+      <button
+        class="notification-btn"
+        onclick="toggleNotifications()"
+        title="Notifications"
+      >
+        🔔
+        <span
+          id="notificationBadge"
+          class="notification-badge hidden"
+        >
+          0
+        </span>
+      </button>
+
+      <button
+        class="logout-btn"
+        onclick="logoutAdmin()"
+      >
+        🚪 Logout
+      </button>
+
+    </div>
+
+
+    <div
+      id="notificationPanel"
+      class="notification-panel hidden"
     >
-      🚪 Logout
-    </button>
+
+      <div class="notification-title">
+        🔔 Admin Notifications
+      </div>
+
+      <div id="notificationList">
+        <div class="empty">
+          কোনো নতুন notification নেই।
+        </div>
+      </div>
+
+    </div>
 
   </div>
 
@@ -575,6 +708,8 @@ const ADMIN_REFRESH_KEY =
 const GUEST_NAME_KEY =
 "picture_chat_guest_name";
 
+let notificationChannel = null;
+
 
 // ================================
 // GUEST NAME
@@ -726,6 +861,9 @@ function updateAdminUI(){
       "hidden"
     );
 
+    loadNotifications();
+    startNotificationListener();
+
   }else{
 
     uploadCard.classList.add(
@@ -739,6 +877,8 @@ function updateAdminUI(){
     loggedInArea.classList.add(
       "hidden"
     );
+
+    stopNotificationListener();
 
   }
 
@@ -949,6 +1089,8 @@ async function loginAdmin(){
 
 async function logoutAdmin(){
 
+  stopNotificationListener();
+
   await supabaseClient.auth.signOut();
 
   localStorage.removeItem(
@@ -962,6 +1104,420 @@ async function logoutAdmin(){
   updateAdminUI();
 
   loadPhotos();
+
+}
+
+
+// ================================
+// LOAD NOTIFICATIONS
+// ================================
+
+async function loadNotifications(){
+
+  if(!isAdmin()) return;
+
+
+  try{
+
+    const { data, error } =
+      await supabaseClient
+        .from("admin_notifications")
+        .select(
+          "id,comment_id,file_name,user_name,comment_text,created_at,read_status"
+        )
+        .order(
+          "created_at",
+          {
+            ascending:false
+          }
+        )
+        .limit(50);
+
+
+    if(error){
+
+      console.error(
+        "Notification load error:",
+        error
+      );
+
+      return;
+
+    }
+
+
+    renderNotifications(
+      data || []
+    );
+
+
+  }catch(error){
+
+    console.error(error);
+
+  }
+
+}
+
+
+// ================================
+// RENDER NOTIFICATIONS
+// ================================
+
+function renderNotifications(items){
+
+  const list =
+    document.getElementById(
+      "notificationList"
+    );
+
+  const badge =
+    document.getElementById(
+      "notificationBadge"
+    );
+
+
+  if(!list || !badge) return;
+
+
+  const unread =
+    items.filter(
+      item =>
+        !item.read_status
+    ).length;
+
+
+  if(unread > 0){
+
+    badge.textContent =
+      unread > 99
+        ? "99+"
+        : unread;
+
+    badge.classList.remove(
+      "hidden"
+    );
+
+  }else{
+
+    badge.classList.add(
+      "hidden"
+    );
+
+  }
+
+
+  if(items.length === 0){
+
+    list.innerHTML =
+      '<div class="empty">কোনো notification নেই।</div>';
+
+    return;
+
+  }
+
+
+  list.innerHTML = "";
+
+
+  items.forEach(item => {
+
+    const div =
+      document.createElement(
+        "div"
+      );
+
+
+    div.className =
+      "notification-item" +
+      (
+        item.read_status
+          ? ""
+          : " unread"
+      );
+
+
+    const name =
+      item.user_name ||
+      "Guest";
+
+
+    const comment =
+      item.comment_text ||
+      "";
+
+
+    const date =
+      new Date(
+        item.created_at
+      ).toLocaleString(
+        "bn-BD"
+      );
+
+
+    div.innerHTML = `
+
+      <div class="notification-name">
+        💬 ${escapeHtml(name)}
+      </div>
+
+      <div class="notification-comment">
+        ${escapeHtml(comment)}
+      </div>
+
+      <div class="notification-photo">
+        🖼️ ${escapeHtml(item.file_name)}
+      </div>
+
+      <div class="notification-time">
+        🕒 ${escapeHtml(date)}
+      </div>
+
+    `;
+
+
+    div.addEventListener(
+      "click",
+      function(){
+
+        openNotification(
+          item
+        );
+
+      }
+    );
+
+
+    list.appendChild(
+      div
+    );
+
+  });
+
+}
+
+
+// ================================
+// OPEN NOTIFICATION
+// ================================
+
+async function openNotification(item){
+
+  try{
+
+    await supabaseClient
+      .from("admin_notifications")
+      .update({
+        read_status:true
+      })
+      .eq(
+        "id",
+        item.id
+      );
+
+
+  }catch(error){
+
+    console.error(error);
+
+  }
+
+
+  const panel =
+    document.getElementById(
+      "notificationPanel"
+    );
+
+
+  if(panel){
+
+    panel.classList.add(
+      "hidden"
+    );
+
+  }
+
+
+  const commentBox =
+    document.getElementById(
+      "comments-" +
+      escapeId(item.file_name)
+    );
+
+
+  if(commentBox){
+
+    commentBox.classList.remove(
+      "hidden"
+    );
+
+
+    await loadComments(
+      item.file_name
+    );
+
+
+    setTimeout(function(){
+
+      commentBox.scrollIntoView({
+        behavior:"smooth",
+        block:"center"
+      });
+
+    },150);
+
+  }else{
+
+    alert(
+      "এই ছবিটি বর্তমানে পাওয়া যাচ্ছে না।"
+    );
+
+  }
+
+
+  loadNotifications();
+
+}
+
+
+// ================================
+// TOGGLE NOTIFICATIONS
+// ================================
+
+function toggleNotifications(){
+
+  const panel =
+    document.getElementById(
+      "notificationPanel"
+    );
+
+
+  if(!panel) return;
+
+
+  if(
+    panel.classList.contains(
+      "hidden"
+    )
+  ){
+
+    panel.classList.remove(
+      "hidden"
+    );
+
+    loadNotifications();
+
+  }else{
+
+    panel.classList.add(
+      "hidden"
+    );
+
+  }
+
+}
+
+
+// ================================
+// REALTIME NOTIFICATION
+// ================================
+
+function startNotificationListener(){
+
+  if(
+    !isAdmin() ||
+    notificationChannel
+  ){
+
+    return;
+
+  }
+
+
+  notificationChannel =
+    supabaseClient
+      .channel(
+        "admin-notifications-channel"
+      )
+      .on(
+        "postgres_changes",
+        {
+          event:"INSERT",
+          schema:"public",
+          table:"admin_notifications"
+        },
+        function(payload){
+
+          if(
+            !isAdmin()
+          ){
+
+            return;
+
+          }
+
+
+          const item =
+            payload.new;
+
+
+          showNotificationPopup(
+            item
+          );
+
+
+          loadNotifications();
+
+        }
+      )
+      .subscribe();
+
+}
+
+
+// ================================
+// STOP REALTIME
+// ================================
+
+function stopNotificationListener(){
+
+  if(
+    notificationChannel
+  ){
+
+    supabaseClient.removeChannel(
+      notificationChannel
+    );
+
+    notificationChannel =
+      null;
+
+  }
+
+}
+
+
+// ================================
+// NEW COMMENT POPUP
+// ================================
+
+function showNotificationPopup(item){
+
+  const name =
+    item.user_name ||
+    "Guest";
+
+  const comment =
+    item.comment_text ||
+    "";
+
+
+  alert(
+    "🔔 নতুন Comment\n\n" +
+    name +
+    "\n\n" +
+    comment
+  );
 
 }
 
@@ -1095,7 +1651,7 @@ async function uploadPhoto(){
     console.error(error);
 
     status.textContent =
-      "❌ আপলোড ব্যর্থ হয়েছে।";
+      "❌ আপলোড ব্যর্থ হয়েছে。";
 
 
     alert(
