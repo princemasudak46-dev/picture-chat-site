@@ -60,6 +60,10 @@
       margin-top: 10px;
     }
 
+    button:disabled {
+      opacity: 0.6;
+    }
+
     #preview {
       max-width: 100%;
       border-radius: 12px;
@@ -82,6 +86,7 @@
     .post img {
       width: 100%;
       border-radius: 10px;
+      display: block;
     }
 
     .footer {
@@ -131,14 +136,17 @@
 
   </div>
 
+
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
+
     const supabase = window.supabase.createClient(
       "https://syzauwriwjwnlwbcxlnf.supabase.co",
       "sb_publishable_af7xm3dnJhVO5XGXRIiyRA_zDOT230o"
     );
+
 
     const photoInput = document.getElementById("photoInput");
     const preview = document.getElementById("preview");
@@ -146,27 +154,39 @@
     const posts = document.getElementById("posts");
     const message = document.getElementById("message");
 
+
     let selectedFile = null;
 
-    photoInput.addEventListener("change", function () {
-      selectedFile = this.files[0];
 
-      if (!selectedFile) {
+    // ছবি নির্বাচন
+    photoInput.addEventListener("change", function () {
+
+      const file = this.files[0];
+
+      if (!file) {
         return;
       }
+
+      selectedFile = file;
 
       const reader = new FileReader();
 
       reader.onload = function (event) {
+
         preview.src = event.target.result;
         preview.style.display = "block";
-        message.innerText = "✅ ছবি প্রস্তুত। এখন পোস্ট করুন।";
+
+        message.innerText =
+          "✅ ছবি প্রস্তুত। এখন পোস্ট করুন।";
       };
 
-      reader.readAsDataURL(selectedFile);
+      reader.readAsDataURL(file);
     });
 
+
+    // Supabase থেকে আগের ছবি দেখানো
     async function loadPosts() {
+
       const { data, error } = await supabase.storage
         .from("photos")
         .list("", {
@@ -177,64 +197,112 @@
           }
         });
 
+
       if (error) {
-        console.log(error);
+
+        console.log("Load error:", error);
+
         return;
       }
+
 
       posts.innerHTML = "";
 
+
       data.forEach(function (file) {
-        const { data: urlData } = supabase.storage
-          .from("photos")
-          .getPublicUrl(file.name);
+
+        const { data: urlData } =
+          supabase.storage
+            .from("photos")
+            .getPublicUrl(file.name);
+
 
         const post = document.createElement("div");
+
         post.className = "post";
 
+
         const image = document.createElement("img");
+
         image.src = urlData.publicUrl;
 
+        image.loading = "lazy";
+
+
         post.appendChild(image);
+
         posts.appendChild(post);
+
       });
+
     }
 
+
+    // ছবি পোস্ট
     postButton.addEventListener("click", async function () {
 
       if (!selectedFile) {
-        message.innerText = "⚠️ আগে একটি ছবি নির্বাচন করুন।";
+
+        message.innerText =
+          "⚠️ আগে একটি ছবি নির্বাচন করুন।";
+
         return;
       }
 
-      message.innerText = "⏳ ছবি আপলোড হচ্ছে...";
+
       postButton.disabled = true;
 
-      const fileName = Date.now() + "-" + selectedFile.name;
+      message.innerText =
+        "⏳ ছবি আপলোড হচ্ছে...";
 
-      const { error } = await supabase.storage
-        .from("photos")
-        .upload(fileName, selectedFile);
+
+      const fileName =
+        Date.now() + "-" + selectedFile.name;
+
+
+      const { error } =
+        await supabase.storage
+          .from("photos")
+          .upload(fileName, selectedFile);
+
 
       if (error) {
-        message.innerText = "❌ আপলোড হয়নি";
-        console.log(error);
+
+        console.log("Upload error:", error);
+
+        message.innerText =
+          "❌ আপলোড হয়নি: " + error.message;
+
         postButton.disabled = false;
+
         return;
       }
 
-      message.innerText = "🎉 ছবি সফলভাবে পোস্ট হয়েছে!";
+
+      message.innerText =
+        "🎉 ছবি সফলভাবে পোস্ট হয়েছে!";
+
 
       selectedFile = null;
+
       photoInput.value = "";
+
+      preview.src = "";
+
       preview.style.display = "none";
+
 
       postButton.disabled = false;
 
-      loadPosts();
+
+      await loadPosts();
+
     });
 
+
+    // ওয়েবসাইট খোলার সময় আগের ছবি দেখাবে
     loadPosts();
+
   </script>
 
 </body>
