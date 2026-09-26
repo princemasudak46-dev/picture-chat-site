@@ -49,6 +49,11 @@
       line-height: 1.6;
     }
 
+    input[type="file"] {
+      max-width: 100%;
+      margin: 10px 0;
+    }
+
     button {
       background: #0088cc;
       color: white;
@@ -147,23 +152,32 @@
 
   </div>
 
-
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-
   <script>
 
-    const supabase = window.supabase.createClient(
-      "https://syzauwriwjwnlwbcxlnf.supabase.co",
-      "sb_publishable_af7xm3dnJhVO5XGXRIiyRA_zDOT230o"
-    );
+    const SUPABASE_URL =
+      "https://syzauwriwjwnlwbcxlnf.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_af7xm3dnJhVO5XGXRIiyRA_zDOT230o";
+
+    const BUCKET =
+      "photos";
 
 
-    const photoInput = document.getElementById("photoInput");
-    const preview = document.getElementById("preview");
-    const postButton = document.getElementById("postButton");
-    const posts = document.getElementById("posts");
-    const message = document.getElementById("message");
+    const photoInput =
+      document.getElementById("photoInput");
+
+    const preview =
+      document.getElementById("preview");
+
+    const postButton =
+      document.getElementById("postButton");
+
+    const posts =
+      document.getElementById("posts");
+
+    const message =
+      document.getElementById("message");
 
 
     let selectedFile = null;
@@ -185,10 +199,12 @@
       reader.onload = function (event) {
 
         preview.src = event.target.result;
+
         preview.style.display = "block";
 
         message.innerText =
           "✅ ছবি প্রস্তুত। এখন পোস্ট করুন।";
+
       };
 
       reader.readAsDataURL(file);
@@ -196,153 +212,229 @@
     });
 
 
-    // Supabase থেকে ছবি দেখানো
+    // Supabase থেকে ছবির তালিকা
     async function loadPosts() {
 
-      const { data, error } = await supabase.storage
-        .from("photos")
-        .list("", {
-          limit: 100,
-          sortBy: {
-            column: "created_at",
-            order: "desc"
+      try {
+
+        const response = await fetch(
+          SUPABASE_URL +
+          "/storage/v1/object/list/" +
+          BUCKET,
+          {
+            method: "POST",
+
+            headers: {
+              "Authorization":
+                "Bearer " + SUPABASE_KEY,
+
+              "apikey":
+                SUPABASE_KEY,
+
+              "Content-Type":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+              prefix: "",
+              limit: 100,
+              sortBy: {
+                column: "created_at",
+                order: "desc"
+              }
+            })
           }
-        });
+        );
 
 
-      if (error) {
+        if (!response.ok) {
 
-        console.log("Load error:", error);
+          console.log(
+            "List error:",
+            await response.text()
+          );
 
-        return;
-      }
-
-
-      posts.innerHTML = "";
-
-
-      if (!data || data.length === 0) {
-
-        return;
-      }
-
-
-      data.forEach(function (file) {
-
-        if (!file.name) {
           return;
         }
 
 
-        const { data: urlData } =
-          supabase.storage
-            .from("photos")
-            .getPublicUrl(file.name);
+        const data =
+          await response.json();
 
 
-        const post =
-          document.createElement("div");
-
-        post.className = "post";
+        posts.innerHTML = "";
 
 
-        const image =
-          document.createElement("img");
+        data.forEach(function (file) {
 
-        image.src = urlData.publicUrl;
-
-        image.loading = "lazy";
-
-        image.alt = "Shared photo";
+          if (!file.name) {
+            return;
+          }
 
 
-        post.appendChild(image);
+          const imageUrl =
+            SUPABASE_URL +
+            "/storage/v1/object/public/" +
+            BUCKET +
+            "/" +
+            encodeURIComponent(file.name);
 
-        posts.appendChild(post);
 
-      });
+          const post =
+            document.createElement("div");
+
+          post.className = "post";
+
+
+          const image =
+            document.createElement("img");
+
+          image.src = imageUrl;
+
+          image.loading = "lazy";
+
+          image.alt =
+            "Shared photo";
+
+
+          post.appendChild(image);
+
+          posts.appendChild(post);
+
+        });
+
+      } catch (error) {
+
+        console.log(
+          "Load error:",
+          error
+        );
+
+      }
 
     }
 
 
     // ছবি পোস্ট
-    postButton.addEventListener("click", async function () {
+    postButton.addEventListener(
+      "click",
+      async function () {
 
-      if (!selectedFile) {
+        if (!selectedFile) {
+
+          message.innerText =
+            "⚠️ আগে একটি ছবি নির্বাচন করুন।";
+
+          return;
+        }
+
+
+        postButton.disabled = true;
 
         message.innerText =
-          "⚠️ আগে একটি ছবি নির্বাচন করুন।";
-
-        return;
-      }
+          "⏳ ছবি আপলোড হচ্ছে...";
 
 
-      postButton.disabled = true;
+        try {
 
-      message.innerText =
-        "⏳ ছবি আপলোড হচ্ছে...";
-
-
-      const safeFileName =
-        selectedFile.name.replace(
-          /[^a-zA-Z0-9._-]/g,
-          "_"
-        );
+          const safeFileName =
+            selectedFile.name.replace(
+              /[^a-zA-Z0-9._-]/g,
+              "_"
+            );
 
 
-      const fileName =
-        Date.now() + "-" + safeFileName;
+          const fileName =
+            Date.now() +
+            "-" +
+            safeFileName;
 
 
-      const { error } =
-        await supabase.storage
-          .from("photos")
-          .upload(
-            fileName,
-            selectedFile,
-            {
-              cacheControl: "3600",
-              upsert: false,
-              contentType: selectedFile.type
-            }
+          const uploadUrl =
+            SUPABASE_URL +
+            "/storage/v1/object/" +
+            BUCKET +
+            "/" +
+            encodeURIComponent(fileName);
+
+
+          const response =
+            await fetch(
+              uploadUrl,
+              {
+                method: "POST",
+
+                headers: {
+                  "Authorization":
+                    "Bearer " + SUPABASE_KEY,
+
+                  "apikey":
+                    SUPABASE_KEY,
+
+                  "Content-Type":
+                    selectedFile.type ||
+                    "application/octet-stream"
+                },
+
+                body: selectedFile
+              }
+            );
+
+
+          if (!response.ok) {
+
+            const errorText =
+              await response.text();
+
+            throw new Error(
+              errorText ||
+              "Upload failed"
+            );
+
+          }
+
+
+          message.innerText =
+            "🎉 ছবি সফলভাবে পোস্ট হয়েছে!";
+
+
+          selectedFile = null;
+
+          photoInput.value = "";
+
+          preview.src = "";
+
+          preview.style.display =
+            "none";
+
+
+          postButton.disabled = false;
+
+
+          await loadPosts();
+
+
+        } catch (error) {
+
+          console.log(
+            "Upload error:",
+            error
           );
 
+          message.innerText =
+            "❌ আপলোড হয়নি: " +
+            error.message;
 
-      if (error) {
 
-        console.log("Upload error:", error);
+          postButton.disabled = false;
 
-        message.innerText =
-          "❌ আপলোড হয়নি: " + error.message;
+        }
 
-        postButton.disabled = false;
-
-        return;
       }
+    );
 
 
-      message.innerText =
-        "🎉 ছবি সফলভাবে পোস্ট হয়েছে!";
-
-
-      selectedFile = null;
-
-      photoInput.value = "";
-
-      preview.src = "";
-
-      preview.style.display = "none";
-
-
-      postButton.disabled = false;
-
-
-      await loadPosts();
-
-    });
-
-
-    // ওয়েবসাইট খোলার সময় ছবি দেখাবে
+    // ওয়েবসাইট চালু হলে ছবি দেখাবে
     loadPosts();
 
   </script>
