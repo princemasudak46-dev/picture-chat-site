@@ -181,6 +181,28 @@
     .likeButton:hover {
       background: #211b0c;
       border-color: #d4af37;
+      transform: translateY(-1px);
+    }
+
+    .likeButton.liked {
+      background: #29170f;
+      border-color: #ff4d6d;
+      color: #ff6b81;
+      animation: likePop 0.35s ease;
+    }
+
+    @keyframes likePop {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.04);
+      }
+
+      100% {
+        transform: scale(1);
+      }
     }
 
     .likeCount {
@@ -219,6 +241,7 @@
 
     .commentInput:focus {
       border-color: #d4af37;
+      box-shadow: 0 0 12px rgba(212, 175, 55, 0.08);
     }
 
     .commentButton {
@@ -231,6 +254,7 @@
       color: #f5d76e;
       font-weight: bold;
       cursor: pointer;
+      transition: 0.2s;
     }
 
     .commentButton:hover {
@@ -242,31 +266,62 @@
     }
 
     .commentItem {
-      background: #101010;
-      border: 1px solid rgba(212, 175, 55, 0.12);
-      border-radius: 10px;
-      padding: 10px 11px;
-      margin-top: 7px;
+      background:
+        linear-gradient(145deg, #151515, #0d0d0d);
+      border: 1px solid rgba(212, 175, 55, 0.16);
+      border-radius: 13px;
+      padding: 12px;
+      margin-top: 8px;
       color: #ddd;
       font-size: 14px;
       word-break: break-word;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+      animation: commentAppear 0.3s ease;
+    }
+
+    @keyframes commentAppear {
+      from {
+        opacity: 0;
+        transform: translateY(5px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .commentHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
     }
 
     .commentName {
       color: #f5d76e;
       font-weight: bold;
-      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .commentTime {
+      color: #666;
+      font-size: 11px;
+      white-space: nowrap;
     }
 
     .commentText {
       color: #ddd;
+      line-height: 1.5;
+      padding-left: 2px;
     }
 
     .noComments {
       color: #666;
       font-size: 13px;
       text-align: center;
-      padding: 5px;
+      padding: 8px;
     }
 
     .footer {
@@ -389,6 +444,68 @@
 
 
     /* =========================
+       Comment Time
+    ========================= */
+
+    function formatCommentTime(dateString) {
+
+      const date =
+        new Date(dateString);
+
+      const now =
+        new Date();
+
+      const seconds =
+        Math.floor(
+          (now - date) / 1000
+        );
+
+
+      if (seconds < 60) {
+        return "এইমাত্র";
+      }
+
+
+      const minutes =
+        Math.floor(seconds / 60);
+
+
+      if (minutes < 60) {
+        return minutes + " মিনিট আগে";
+      }
+
+
+      const hours =
+        Math.floor(minutes / 60);
+
+
+      if (hours < 24) {
+        return hours + " ঘণ্টা আগে";
+      }
+
+
+      const days =
+        Math.floor(hours / 24);
+
+
+      if (days < 7) {
+        return days + " দিন আগে";
+      }
+
+
+      return date.toLocaleDateString(
+        "bn-BD",
+        {
+          day: "numeric",
+          month: "short",
+          year: "numeric"
+        }
+      );
+
+    }
+
+
+    /* =========================
        ছবি নির্বাচন
     ========================= */
 
@@ -408,9 +525,11 @@
 
         reader.onload = function (event) {
 
-          preview.src = event.target.result;
+          preview.src =
+            event.target.result;
 
-          preview.style.display = "block";
+          preview.style.display =
+            "block";
 
           message.innerText =
             "✅ ছবি প্রস্তুত। এখন পোস্ট করুন.";
@@ -501,8 +620,11 @@
             item.comment.split("|||");
 
 
-          let userName = "Guest";
-          let userComment = item.comment;
+          let userName =
+            "Guest";
+
+          let userComment =
+            item.comment;
 
 
           if (parts.length >= 2) {
@@ -511,9 +633,19 @@
               parts[0].trim();
 
             userComment =
-              parts.slice(1).join("|||").trim();
+              parts
+                .slice(1)
+                .join("|||")
+                .trim();
 
           }
+
+
+          const commentHeader =
+            document.createElement("div");
+
+          commentHeader.className =
+            "commentHeader";
 
 
           const commentName =
@@ -524,6 +656,27 @@
 
           commentName.innerText =
             "👤 " + userName;
+
+
+          const commentTime =
+            document.createElement("div");
+
+          commentTime.className =
+            "commentTime";
+
+          commentTime.innerText =
+            formatCommentTime(
+              item.created_at
+            );
+
+
+          commentHeader.appendChild(
+            commentName
+          );
+
+          commentHeader.appendChild(
+            commentTime
+          );
 
 
           const commentText =
@@ -537,7 +690,7 @@
 
 
           commentItem.appendChild(
-            commentName
+            commentHeader
           );
 
           commentItem.appendChild(
@@ -579,34 +732,36 @@
 
       try {
 
-        const response = await fetch(
-          SUPABASE_URL +
-          "/storage/v1/object/list/" +
-          BUCKET,
-          {
-            method: "POST",
+        const response =
+          await fetch(
+            SUPABASE_URL +
+            "/storage/v1/object/list/" +
+            BUCKET,
+            {
+              method: "POST",
 
-            headers: {
-              "Authorization":
-                "Bearer " + SUPABASE_KEY,
+              headers: {
+                "Authorization":
+                  "Bearer " +
+                  SUPABASE_KEY,
 
-              "apikey":
-                SUPABASE_KEY,
+                "apikey":
+                  SUPABASE_KEY,
 
-              "Content-Type":
-                "application/json"
-            },
+                "Content-Type":
+                  "application/json"
+              },
 
-            body: JSON.stringify({
-              prefix: "",
-              limit: 100,
-              sortBy: {
-                column: "created_at",
-                order: "desc"
-              }
-            })
-          }
-        );
+              body: JSON.stringify({
+                prefix: "",
+                limit: 100,
+                sortBy: {
+                  column: "created_at",
+                  order: "desc"
+                }
+              })
+            }
+          );
 
 
         if (!response.ok) {
@@ -614,7 +769,9 @@
           const errorText =
             await response.text();
 
-          throw new Error(errorText);
+          throw new Error(
+            errorText
+          );
         }
 
 
@@ -625,7 +782,10 @@
         posts.innerHTML = "";
 
 
-        if (!files || files.length === 0) {
+        if (
+          !files ||
+          files.length === 0
+        ) {
 
           posts.innerHTML =
             "<p style='text-align:center;color:#aaa;'>এখনও কোনো ছবি নেই।</p>";
@@ -634,7 +794,9 @@
         }
 
 
-        for (const file of files) {
+        for (
+          const file of files
+        ) {
 
           if (!file.name) {
             continue;
@@ -646,7 +808,9 @@
             "/storage/v1/object/public/" +
             BUCKET +
             "/" +
-            encodeURIComponent(file.name);
+            encodeURIComponent(
+              file.name
+            );
 
 
           let likes = 0;
@@ -662,7 +826,9 @@
                 "/rest/v1/photo_posts" +
                 "?select=likes" +
                 "&file_name=eq." +
-                encodeURIComponent(file.name),
+                encodeURIComponent(
+                  file.name
+                ),
                 {
                   method: "GET",
 
@@ -678,10 +844,13 @@
               );
 
 
-            if (likeResponse.ok) {
+            if (
+              likeResponse.ok
+            ) {
 
               const likeData =
                 await likeResponse.json();
+
 
               if (
                 likeData.length > 0 &&
@@ -689,7 +858,9 @@
               ) {
 
                 likes =
-                  Number(likeData[0].likes);
+                  Number(
+                    likeData[0].likes
+                  );
 
               }
 
@@ -708,27 +879,37 @@
           /* Post */
 
           const post =
-            document.createElement("div");
+            document.createElement(
+              "div"
+            );
 
-          post.className = "post";
+          post.className =
+            "post";
 
 
           /* Image */
 
           const image =
-            document.createElement("img");
+            document.createElement(
+              "img"
+            );
 
-          image.src = imageUrl;
+          image.src =
+            imageUrl;
 
-          image.alt = "Shared photo";
+          image.alt =
+            "Shared photo";
 
-          image.loading = "lazy";
+          image.loading =
+            "lazy";
 
 
           /* Like button */
 
           const likeButton =
-            document.createElement("button");
+            document.createElement(
+              "button"
+            );
 
           likeButton.className =
             "likeButton";
@@ -740,13 +921,17 @@
           /* Like count */
 
           const likeCount =
-            document.createElement("div");
+            document.createElement(
+              "div"
+            );
 
           likeCount.className =
             "likeCount";
 
           likeCount.innerText =
-            "❤️ " + likes + " Likes";
+            "❤️ " +
+            likes +
+            " Likes";
 
 
           /* Like click */
@@ -755,7 +940,8 @@
             "click",
             async function () {
 
-              likeButton.disabled = true;
+              likeButton.disabled =
+                true;
 
               likeButton.innerText =
                 "⏳ Like হচ্ছে...";
@@ -768,7 +954,9 @@
                     SUPABASE_URL +
                     "/rest/v1/photo_posts" +
                     "?file_name=eq." +
-                    encodeURIComponent(file.name),
+                    encodeURIComponent(
+                      file.name
+                    ),
                     {
                       method: "PATCH",
 
@@ -788,13 +976,16 @@
                       },
 
                       body: JSON.stringify({
-                        likes: likes + 1
+                        likes:
+                          likes + 1
                       })
                     }
                   );
 
 
-                if (!updateResponse.ok) {
+                if (
+                  !updateResponse.ok
+                ) {
 
                   throw new Error(
                     await updateResponse.text()
@@ -805,14 +996,35 @@
 
                 likes++;
 
+
                 likeCount.innerText =
                   "❤️ " +
                   likes +
                   " Likes";
 
 
+                likeButton.classList.add(
+                  "liked"
+                );
+
+
                 likeButton.innerText =
-                  "❤️ Like";
+                  "❤️ Liked";
+
+
+                setTimeout(
+                  function () {
+
+                    likeButton.classList.remove(
+                      "liked"
+                    );
+
+                    likeButton.innerText =
+                      "❤️ Like";
+
+                  },
+                  700
+                );
 
 
               } catch (error) {
@@ -828,7 +1040,8 @@
               }
 
 
-              likeButton.disabled = false;
+              likeButton.disabled =
+                false;
 
             }
           );
@@ -839,14 +1052,18 @@
           ========================= */
 
           const commentBox =
-            document.createElement("div");
+            document.createElement(
+              "div"
+            );
 
           commentBox.className =
             "commentBox";
 
 
           const commentTitle =
-            document.createElement("div");
+            document.createElement(
+              "div"
+            );
 
           commentTitle.className =
             "commentTitle";
@@ -858,7 +1075,9 @@
           /* Comment input */
 
           const commentInput =
-            document.createElement("textarea");
+            document.createElement(
+              "textarea"
+            );
 
           commentInput.className =
             "commentInput";
@@ -873,7 +1092,9 @@
           /* Comment button */
 
           const commentButton =
-            document.createElement("button");
+            document.createElement(
+              "button"
+            );
 
           commentButton.className =
             "commentButton";
@@ -885,7 +1106,9 @@
           /* Comments list */
 
           const commentsList =
-            document.createElement("div");
+            document.createElement(
+              "div"
+            );
 
           commentsList.className =
             "commentsList";
@@ -909,19 +1132,14 @@
               }
 
 
-              commentButton.disabled = true;
+              commentButton.disabled =
+                true;
 
               commentButton.innerText =
                 "⏳ Comment হচ্ছে...";
 
 
               try {
-
-                /*
-                  নাম অটোমেটিক তৈরি হবে।
-                  উদাহরণ:
-                  Guest-4821|||ছবি টা সুন্দর হয়েছে
-                */
 
                 const userName =
                   getGuestName();
@@ -966,7 +1184,9 @@
                   );
 
 
-                if (!commentResponse.ok) {
+                if (
+                  !commentResponse.ok
+                ) {
 
                   throw new Error(
                     await commentResponse.text()
@@ -975,7 +1195,8 @@
                 }
 
 
-                commentInput.value = "";
+                commentInput.value =
+                  "";
 
 
                 await loadComments(
@@ -998,7 +1219,8 @@
               }
 
 
-              commentButton.disabled = false;
+              commentButton.disabled =
+                false;
 
               commentButton.innerText =
                 "💬 Comment করুন";
@@ -1024,18 +1246,26 @@
           );
 
 
-          post.appendChild(image);
+          post.appendChild(
+            image
+          );
 
-          post.appendChild(likeButton);
+          post.appendChild(
+            likeButton
+          );
 
-          post.appendChild(likeCount);
+          post.appendChild(
+            likeCount
+          );
 
-          post.appendChild(commentBox);
+          post.appendChild(
+            commentBox
+          );
 
-          posts.appendChild(post);
+          posts.appendChild(
+            post
+          );
 
-
-          /* Load comments */
 
           await loadComments(
             file.name,
@@ -1078,7 +1308,8 @@
         }
 
 
-        postButton.disabled = true;
+        postButton.disabled =
+          true;
 
         message.innerText =
           "⏳ ছবি আপলোড হচ্ছে...";
@@ -1104,7 +1335,9 @@
             "/storage/v1/object/" +
             BUCKET +
             "/" +
-            encodeURIComponent(fileName);
+            encodeURIComponent(
+              fileName
+            );
 
 
           const uploadResponse =
@@ -1126,12 +1359,15 @@
                     "application/octet-stream"
                 },
 
-                body: selectedFile
+                body:
+                  selectedFile
               }
             );
 
 
-          if (!uploadResponse.ok) {
+          if (
+            !uploadResponse.ok
+          ) {
 
             throw new Error(
               await uploadResponse.text()
@@ -1165,14 +1401,19 @@
                 },
 
                 body: JSON.stringify({
-                  file_name: fileName,
-                  likes: 0
+                  file_name:
+                    fileName,
+
+                  likes:
+                    0
                 })
               }
             );
 
 
-          if (!dbResponse.ok) {
+          if (
+            !dbResponse.ok
+          ) {
 
             console.log(
               "Database error:",
@@ -1186,15 +1427,20 @@
             "🎉 ছবি সফলভাবে পোস্ট হয়েছে!";
 
 
-          selectedFile = null;
+          selectedFile =
+            null;
 
-          photoInput.value = "";
+          photoInput.value =
+            "";
 
-          preview.src = "";
+          preview.src =
+            "";
 
-          preview.style.display = "none";
+          preview.style.display =
+            "none";
 
-          postButton.disabled = false;
+          postButton.disabled =
+            false;
 
 
           await loadPosts();
@@ -1212,7 +1458,8 @@
             "❌ আপলোড হয়নি";
 
 
-          postButton.disabled = false;
+          postButton.disabled =
+            false;
 
         }
 
