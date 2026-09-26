@@ -205,10 +205,9 @@
       margin-bottom: 10px;
     }
 
+    .nameInput,
     .commentInput {
       width: 100%;
-      min-height: 42px;
-      resize: vertical;
       padding: 11px 12px;
       border-radius: 10px;
       border: 1px solid rgba(212, 175, 55, 0.3);
@@ -216,8 +215,19 @@
       color: #fff;
       outline: none;
       font-size: 14px;
+      font-family: Arial, sans-serif;
     }
 
+    .nameInput {
+      margin-bottom: 8px;
+    }
+
+    .commentInput {
+      min-height: 42px;
+      resize: vertical;
+    }
+
+    .nameInput:focus,
     .commentInput:focus {
       border-color: #d4af37;
     }
@@ -246,11 +256,21 @@
       background: #101010;
       border: 1px solid rgba(212, 175, 55, 0.12);
       border-radius: 10px;
-      padding: 9px 11px;
+      padding: 10px 11px;
       margin-top: 7px;
       color: #ddd;
       font-size: 14px;
       word-break: break-word;
+    }
+
+    .commentName {
+      color: #f5d76e;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .commentText {
+      color: #ddd;
     }
 
     .noComments {
@@ -377,7 +397,7 @@
           preview.style.display = "block";
 
           message.innerText =
-            "✅ ছবি প্রস্তুত। এখন পোস্ট করুন।";
+            "✅ ছবি প্রস্তুত। এখন পোস্ট করুন.";
         };
 
         reader.readAsDataURL(file);
@@ -460,8 +480,63 @@
           commentItem.className =
             "commentItem";
 
-          commentItem.innerText =
-            "💬 " + item.comment;
+
+          /*
+            নতুন Comment-এর format:
+
+            Name|||Comment
+
+            পুরোনো Comment হলে
+            শুধু Comment দেখাবে।
+          */
+
+          const parts =
+            item.comment.split("|||");
+
+
+          let userName = "Anonymous";
+          let userComment = item.comment;
+
+
+          if (parts.length >= 2) {
+
+            userName =
+              parts[0].trim();
+
+            userComment =
+              parts.slice(1).join("|||").trim();
+
+          }
+
+
+          const commentName =
+            document.createElement("div");
+
+          commentName.className =
+            "commentName";
+
+          commentName.innerText =
+            "👤 " + userName;
+
+
+          const commentText =
+            document.createElement("div");
+
+          commentText.className =
+            "commentText";
+
+          commentText.innerText =
+            "💬 " + userComment;
+
+
+          commentItem.appendChild(
+            commentName
+          );
+
+          commentItem.appendChild(
+            commentText
+          );
+
 
           commentsList.appendChild(
             commentItem
@@ -773,15 +848,40 @@
             "💬 Comments";
 
 
+          /* Name input */
+
+          const nameInput =
+            document.createElement("input");
+
+          nameInput.className =
+            "nameInput";
+
+          nameInput.type =
+            "text";
+
+          nameInput.maxLength =
+            30;
+
+          nameInput.placeholder =
+            "👤 আপনার নাম লিখুন...";
+
+
+          /* Comment input */
+
           const commentInput =
             document.createElement("textarea");
 
           commentInput.className =
             "commentInput";
 
-          commentInput.placeholder =
-            "আপনার Comment লিখুন...";
+          commentInput.maxLength =
+            500;
 
+          commentInput.placeholder =
+            "💬 আপনার Comment লিখুন...";
+
+
+          /* Comment button */
 
           const commentButton =
             document.createElement("button");
@@ -792,6 +892,8 @@
           commentButton.innerText =
             "💬 Comment করুন";
 
+
+          /* Comments list */
 
           const commentsList =
             document.createElement("div");
@@ -806,8 +908,19 @@
             "click",
             async function () {
 
+              const userName =
+                nameInput.value.trim();
+
               const comment =
                 commentInput.value.trim();
+
+
+              if (!userName) {
+
+                nameInput.focus();
+
+                return;
+              }
 
 
               if (!comment) {
@@ -825,6 +938,20 @@
 
 
               try {
+
+                /*
+                  Name এবং Comment
+                  একসাথে Database-এ রাখা হচ্ছে।
+
+                  Format:
+                  Name|||Comment
+                */
+
+                const savedComment =
+                  userName +
+                  "|||" +
+                  comment;
+
 
                 const commentResponse =
                   await fetch(
@@ -853,7 +980,7 @@
                           file.name,
 
                         comment:
-                          comment
+                          savedComment
                       })
                     }
                   );
@@ -869,6 +996,11 @@
 
 
                 commentInput.value = "";
+
+                /*
+                  নামটি আবার ব্যবহার করা যাবে,
+                  তাই Name input খালি করা হচ্ছে না।
+                */
 
                 await loadComments(
                   file.name,
@@ -901,6 +1033,10 @@
 
           commentBox.appendChild(
             commentTitle
+          );
+
+          commentBox.appendChild(
+            nameInput
           );
 
           commentBox.appendChild(
