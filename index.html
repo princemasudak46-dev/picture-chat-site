@@ -20,7 +20,6 @@
       min-height: 100vh;
     }
 
-    /* Header */
     .header {
       padding: 24px 15px;
       text-align: center;
@@ -47,14 +46,12 @@
       font-size: 13px;
     }
 
-    /* Main */
     .container {
       max-width: 620px;
       margin: 25px auto;
       padding: 15px;
     }
 
-    /* Upload Card */
     .card {
       background: linear-gradient(145deg, #181818, #0e0e0e);
       border: 1px solid rgba(212, 175, 55, 0.28);
@@ -77,7 +74,6 @@
       line-height: 1.6;
     }
 
-    /* File input */
     .fileBox {
       margin-top: 18px;
       padding: 14px;
@@ -102,7 +98,6 @@
       margin-right: 10px;
     }
 
-    /* Preview */
     #preview {
       display: none;
       width: 100%;
@@ -114,7 +109,6 @@
       background: #050505;
     }
 
-    /* Post button */
     #postButton {
       width: 100%;
       margin-top: 18px;
@@ -147,7 +141,6 @@
       font-size: 14px;
     }
 
-    /* Posts */
     #posts {
       margin-top: 25px;
     }
@@ -171,7 +164,6 @@
       background: #050505;
     }
 
-    /* Like */
     .likeButton {
       width: 100%;
       margin-top: 12px;
@@ -198,7 +190,76 @@
       font-size: 13px;
     }
 
-    /* Footer */
+    /* Comments */
+
+    .commentBox {
+      margin-top: 15px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(212, 175, 55, 0.18);
+    }
+
+    .commentTitle {
+      color: #f5d76e;
+      font-size: 15px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .commentInput {
+      width: 100%;
+      min-height: 42px;
+      resize: vertical;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      background: #0a0a0a;
+      color: #fff;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .commentInput:focus {
+      border-color: #d4af37;
+    }
+
+    .commentButton {
+      width: 100%;
+      margin-top: 8px;
+      padding: 10px;
+      border: 1px solid #c9a227;
+      border-radius: 10px;
+      background: #17130a;
+      color: #f5d76e;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .commentButton:hover {
+      background: #211b0c;
+    }
+
+    .commentsList {
+      margin-top: 12px;
+    }
+
+    .commentItem {
+      background: #101010;
+      border: 1px solid rgba(212, 175, 55, 0.12);
+      border-radius: 10px;
+      padding: 9px 11px;
+      margin-top: 7px;
+      color: #ddd;
+      font-size: 14px;
+      word-break: break-word;
+    }
+
+    .noComments {
+      color: #666;
+      font-size: 13px;
+      text-align: center;
+      padding: 5px;
+    }
+
     .footer {
       text-align: center;
       color: #666;
@@ -231,7 +292,7 @@
       <h1>✨ স্বাগতম</h1>
 
       <p>
-        আপনার ছবি শেয়ার করুন এবং অন্যদের ছবিতে ❤️ Like দিন।
+        আপনার ছবি শেয়ার করুন এবং অন্যদের ছবিতে ❤️ Like ও 💬 Comment দিন।
       </p>
 
       <div class="fileBox">
@@ -323,6 +384,105 @@
 
       }
     );
+
+
+    /* =========================
+       Comments লোড
+    ========================= */
+
+    async function loadComments(
+      fileName,
+      commentsList
+    ) {
+
+      commentsList.innerHTML =
+        "<div class='noComments'>⏳ Comment লোড হচ্ছে...</div>";
+
+
+      try {
+
+        const response =
+          await fetch(
+            SUPABASE_URL +
+            "/rest/v1/photo_comments" +
+            "?select=comment,created_at" +
+            "&file_name=eq." +
+            encodeURIComponent(fileName) +
+            "&order=created_at.desc",
+            {
+              method: "GET",
+
+              headers: {
+                "apikey":
+                  SUPABASE_KEY,
+
+                "Authorization":
+                  "Bearer " +
+                  SUPABASE_KEY
+              }
+            }
+          );
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            await response.text()
+          );
+
+        }
+
+
+        const comments =
+          await response.json();
+
+
+        commentsList.innerHTML = "";
+
+
+        if (
+          !comments ||
+          comments.length === 0
+        ) {
+
+          commentsList.innerHTML =
+            "<div class='noComments'>এখনও কোনো Comment নেই।</div>";
+
+          return;
+        }
+
+
+        comments.forEach(function(item) {
+
+          const commentItem =
+            document.createElement("div");
+
+          commentItem.className =
+            "commentItem";
+
+          commentItem.innerText =
+            "💬 " + item.comment;
+
+          commentsList.appendChild(
+            commentItem
+          );
+
+        });
+
+
+      } catch (error) {
+
+        console.log(
+          "Comment load error:",
+          error
+        );
+
+        commentsList.innerHTML =
+          "<div class='noComments'>❌ Comment লোড হয়নি</div>";
+
+      }
+
+    }
 
 
     /* =========================
@@ -592,13 +752,187 @@
           );
 
 
+          /* =========================
+             Comment section
+          ========================= */
+
+          const commentBox =
+            document.createElement("div");
+
+          commentBox.className =
+            "commentBox";
+
+
+          const commentTitle =
+            document.createElement("div");
+
+          commentTitle.className =
+            "commentTitle";
+
+          commentTitle.innerText =
+            "💬 Comments";
+
+
+          const commentInput =
+            document.createElement("textarea");
+
+          commentInput.className =
+            "commentInput";
+
+          commentInput.placeholder =
+            "আপনার Comment লিখুন...";
+
+
+          const commentButton =
+            document.createElement("button");
+
+          commentButton.className =
+            "commentButton";
+
+          commentButton.innerText =
+            "💬 Comment করুন";
+
+
+          const commentsList =
+            document.createElement("div");
+
+          commentsList.className =
+            "commentsList";
+
+
+          /* Comment submit */
+
+          commentButton.addEventListener(
+            "click",
+            async function () {
+
+              const comment =
+                commentInput.value.trim();
+
+
+              if (!comment) {
+
+                commentInput.focus();
+
+                return;
+              }
+
+
+              commentButton.disabled = true;
+
+              commentButton.innerText =
+                "⏳ Comment হচ্ছে...";
+
+
+              try {
+
+                const commentResponse =
+                  await fetch(
+                    SUPABASE_URL +
+                    "/rest/v1/photo_comments",
+                    {
+                      method: "POST",
+
+                      headers: {
+                        "apikey":
+                          SUPABASE_KEY,
+
+                        "Authorization":
+                          "Bearer " +
+                          SUPABASE_KEY,
+
+                        "Content-Type":
+                          "application/json",
+
+                        "Prefer":
+                          "return=minimal"
+                      },
+
+                      body: JSON.stringify({
+                        file_name:
+                          file.name,
+
+                        comment:
+                          comment
+                      })
+                    }
+                  );
+
+
+                if (!commentResponse.ok) {
+
+                  throw new Error(
+                    await commentResponse.text()
+                  );
+
+                }
+
+
+                commentInput.value = "";
+
+                await loadComments(
+                  file.name,
+                  commentsList
+                );
+
+
+              } catch (error) {
+
+                console.log(
+                  "Comment error:",
+                  error
+                );
+
+                alert(
+                  "❌ Comment পোস্ট হয়নি"
+                );
+
+              }
+
+
+              commentButton.disabled = false;
+
+              commentButton.innerText =
+                "💬 Comment করুন";
+
+            }
+          );
+
+
+          commentBox.appendChild(
+            commentTitle
+          );
+
+          commentBox.appendChild(
+            commentInput
+          );
+
+          commentBox.appendChild(
+            commentButton
+          );
+
+          commentBox.appendChild(
+            commentsList
+          );
+
+
           post.appendChild(image);
 
           post.appendChild(likeButton);
 
           post.appendChild(likeCount);
 
+          post.appendChild(commentBox);
+
           posts.appendChild(post);
+
+
+          /* Load comments */
+
+          await loadComments(
+            file.name,
+            commentsList
+          );
 
         }
 
