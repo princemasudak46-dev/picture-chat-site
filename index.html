@@ -3,19 +3,693 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Picture Chat Test</title>
+
+  <title>Picture Chat</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      color: #222;
+    }
+
+    .header {
+      background: #0088cc;
+      color: white;
+      padding: 18px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 25px auto;
+      padding: 15px;
+    }
+
+    .card,
+    .post {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.10);
+    }
+
+    .card {
+      padding: 22px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    input[type="file"] {
+      max-width: 100%;
+      margin: 10px 0;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 13px 22px;
+      font-size: 16px;
+      cursor: pointer;
+      color: white;
+    }
+
+    #postButton {
+      background: #0088cc;
+      margin-top: 10px;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #preview {
+      display: none;
+      width: 100%;
+      max-height: 400px;
+      object-fit: contain;
+      margin-top: 15px;
+      border-radius: 12px;
+    }
+
+    #posts {
+      margin-top: 20px;
+    }
+
+    .post {
+      padding: 12px;
+      margin-bottom: 18px;
+    }
+
+    .post img {
+      width: 100%;
+      max-height: 600px;
+      object-fit: contain;
+      border-radius: 10px;
+      display: block;
+      background: #eee;
+    }
+
+    .likeButton {
+      width: 100%;
+      margin-top: 12px;
+      background: #ff4d6d;
+    }
+
+    .likeCount {
+      text-align: center;
+      margin-top: 8px;
+      color: #555;
+      font-size: 14px;
+    }
+
+    #message {
+      min-height: 24px;
+    }
+
+    .footer {
+      text-align: center;
+      color: #888;
+      font-size: 14px;
+      margin: 25px 0;
+    }
+  </style>
 </head>
 
 <body>
 
-  <h2>📸 Picture Chat</h2>
+  <div class="header">
+    📸 Picture Chat
+  </div>
 
-  <p>নিচে ছবি দেখা গেলে বুঝব ছবির লিংক ঠিক আছে।</p>
+  <div class="container">
 
-  <img
-    src="https://syzauwriwjwnlwbcxlnf.supabase.co/storage/v1/object/public/photos/1790415601599-43557.jpg"
-    style="width:100%;max-width:500px;border-radius:15px;"
-  >
+    <div class="card">
+
+      <h1>স্বাগতম ❤️</h1>
+
+      <p>
+        এখানে আপনি সহজেই ছবি শেয়ার করতে পারবেন।
+      </p>
+
+      <input
+        type="file"
+        id="photoInput"
+        accept="image/*"
+      >
+
+      <br>
+
+      <img id="preview" alt="ছবির প্রিভিউ">
+
+      <br>
+
+      <button id="postButton">
+        📤 পোস্ট করুন
+      </button>
+
+      <p id="message"></p>
+
+    </div>
+
+    <div id="posts"></div>
+
+    <div class="footer">
+      © 2026 Picture Chat
+    </div>
+
+  </div>
+
+
+  <script>
+
+    const SUPABASE_URL =
+      "https://syzauwriwjwnlwbcxlnf.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_af7xm3dnJhVO5XGXRIiyRA_zDOT230o";
+
+    const BUCKET = "photos";
+
+
+    const photoInput =
+      document.getElementById("photoInput");
+
+    const preview =
+      document.getElementById("preview");
+
+    const postButton =
+      document.getElementById("postButton");
+
+    const posts =
+      document.getElementById("posts");
+
+    const message =
+      document.getElementById("message");
+
+
+    let selectedFile = null;
+
+
+    /* =========================
+       ছবি নির্বাচন
+    ========================= */
+
+    photoInput.addEventListener(
+      "change",
+      function () {
+
+        const file = this.files[0];
+
+        if (!file) {
+          return;
+        }
+
+        selectedFile = file;
+
+        const reader = new FileReader();
+
+        reader.onload = function (event) {
+
+          preview.src = event.target.result;
+
+          preview.style.display = "block";
+
+          message.innerText =
+            "✅ ছবি প্রস্তুত। এখন পোস্ট করুন।";
+        };
+
+        reader.readAsDataURL(file);
+
+      }
+    );
+
+
+    /* =========================
+       Supabase Storage থেকে ছবি আনা
+    ========================= */
+
+    async function loadPosts() {
+
+      posts.innerHTML =
+        "<p style='text-align:center;'>⏳ ছবি লোড হচ্ছে...</p>";
+
+
+      try {
+
+        const response = await fetch(
+          SUPABASE_URL +
+          "/storage/v1/object/list/" +
+          BUCKET,
+          {
+            method: "POST",
+
+            headers: {
+              "Authorization":
+                "Bearer " + SUPABASE_KEY,
+
+              "apikey":
+                SUPABASE_KEY,
+
+              "Content-Type":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+              prefix: "",
+              limit: 100,
+              sortBy: {
+                column: "created_at",
+                order: "desc"
+              }
+            })
+          }
+        );
+
+
+        if (!response.ok) {
+
+          const errorText =
+            await response.text();
+
+          throw new Error(errorText);
+        }
+
+
+        const files =
+          await response.json();
+
+
+        posts.innerHTML = "";
+
+
+        if (!files || files.length === 0) {
+
+          posts.innerHTML =
+            "<p style='text-align:center;'>এখনও কোনো ছবি নেই।</p>";
+
+          return;
+        }
+
+
+        for (const file of files) {
+
+          if (!file.name) {
+            continue;
+          }
+
+
+          const imageUrl =
+            SUPABASE_URL +
+            "/storage/v1/object/public/" +
+            BUCKET +
+            "/" +
+            encodeURIComponent(file.name);
+
+
+          let likes = 0;
+
+
+          /* Database থেকে Like count নেওয়া */
+
+          try {
+
+            const likeResponse =
+              await fetch(
+                SUPABASE_URL +
+                "/rest/v1/photo_posts" +
+                "?select=likes" +
+                "&file_name=eq." +
+                encodeURIComponent(file.name),
+                {
+                  method: "GET",
+
+                  headers: {
+                    "apikey":
+                      SUPABASE_KEY,
+
+                    "Authorization":
+                      "Bearer " +
+                      SUPABASE_KEY
+                  }
+                }
+              );
+
+
+            if (likeResponse.ok) {
+
+              const likeData =
+                await likeResponse.json();
+
+              if (
+                likeData.length > 0 &&
+                likeData[0].likes != null
+              ) {
+                likes =
+                  Number(likeData[0].likes);
+              }
+
+            }
+
+          } catch (e) {
+
+            console.log(
+              "Like count error:",
+              e
+            );
+
+          }
+
+
+          /* Post তৈরি */
+
+          const post =
+            document.createElement("div");
+
+          post.className = "post";
+
+
+          /* ছবি */
+
+          const image =
+            document.createElement("img");
+
+          image.src = imageUrl;
+
+          image.alt = "Shared photo";
+
+          image.loading = "lazy";
+
+
+          /* Like button */
+
+          const likeButton =
+            document.createElement("button");
+
+          likeButton.className =
+            "likeButton";
+
+          likeButton.innerText =
+            "❤️ Like";
+
+
+          /* Like count */
+
+          const likeCount =
+            document.createElement("div");
+
+          likeCount.className =
+            "likeCount";
+
+          likeCount.innerText =
+            "❤️ " + likes + " Likes";
+
+
+          /* Like click */
+
+          likeButton.addEventListener(
+            "click",
+            async function () {
+
+              likeButton.disabled = true;
+
+              likeButton.innerText =
+                "⏳ Like হচ্ছে...";
+
+
+              try {
+
+                const updateResponse =
+                  await fetch(
+                    SUPABASE_URL +
+                    "/rest/v1/photo_posts" +
+                    "?file_name=eq." +
+                    encodeURIComponent(file.name),
+                    {
+                      method: "PATCH",
+
+                      headers: {
+                        "apikey":
+                          SUPABASE_KEY,
+
+                        "Authorization":
+                          "Bearer " +
+                          SUPABASE_KEY,
+
+                        "Content-Type":
+                          "application/json",
+
+                        "Prefer":
+                          "return=representation"
+                      },
+
+                      body: JSON.stringify({
+                        likes: likes + 1
+                      })
+                    }
+                  );
+
+
+                if (!updateResponse.ok) {
+
+                  throw new Error(
+                    await updateResponse.text()
+                  );
+                }
+
+
+                likes++;
+
+                likeCount.innerText =
+                  "❤️ " +
+                  likes +
+                  " Likes";
+
+
+                likeButton.innerText =
+                  "❤️ Like";
+
+
+              } catch (error) {
+
+                console.log(
+                  "Like error:",
+                  error
+                );
+
+                likeButton.innerText =
+                  "❌ আবার চেষ্টা করুন";
+
+              }
+
+
+              likeButton.disabled = false;
+
+            }
+          );
+
+
+          post.appendChild(image);
+
+          post.appendChild(likeButton);
+
+          post.appendChild(likeCount);
+
+          posts.appendChild(post);
+
+        }
+
+
+      } catch (error) {
+
+        console.log(
+          "Load error:",
+          error
+        );
+
+
+        posts.innerHTML =
+          "<p style='text-align:center;color:red;'>❌ ছবি লোড হয়নি</p>";
+      }
+
+    }
+
+
+    /* =========================
+       নতুন ছবি পোস্ট
+    ========================= */
+
+    postButton.addEventListener(
+      "click",
+      async function () {
+
+        if (!selectedFile) {
+
+          message.innerText =
+            "⚠️ আগে একটি ছবি নির্বাচন করুন।";
+
+          return;
+        }
+
+
+        postButton.disabled = true;
+
+        message.innerText =
+          "⏳ ছবি আপলোড হচ্ছে...";
+
+
+        try {
+
+          const safeFileName =
+            selectedFile.name.replace(
+              /[^a-zA-Z0-9._-]/g,
+              "_"
+            );
+
+
+          const fileName =
+            Date.now() +
+            "-" +
+            safeFileName;
+
+
+          const uploadUrl =
+            SUPABASE_URL +
+            "/storage/v1/object/" +
+            BUCKET +
+            "/" +
+            encodeURIComponent(fileName);
+
+
+          const uploadResponse =
+            await fetch(
+              uploadUrl,
+              {
+                method: "POST",
+
+                headers: {
+                  "Authorization":
+                    "Bearer " +
+                    SUPABASE_KEY,
+
+                  "apikey":
+                    SUPABASE_KEY,
+
+                  "Content-Type":
+                    selectedFile.type ||
+                    "application/octet-stream"
+                },
+
+                body: selectedFile
+              }
+            );
+
+
+          if (!uploadResponse.ok) {
+
+            throw new Error(
+              await uploadResponse.text()
+            );
+          }
+
+
+          /* Database-এ ছবির record তৈরি */
+
+          const dbResponse =
+            await fetch(
+              SUPABASE_URL +
+              "/rest/v1/photo_posts",
+              {
+                method: "POST",
+
+                headers: {
+                  "Authorization":
+                    "Bearer " +
+                    SUPABASE_KEY,
+
+                  "apikey":
+                    SUPABASE_KEY,
+
+                  "Content-Type":
+                    "application/json",
+
+                  "Prefer":
+                    "return=minimal"
+                },
+
+                body: JSON.stringify({
+                  file_name: fileName,
+                  likes: 0
+                })
+              }
+            );
+
+
+          if (!dbResponse.ok) {
+
+            console.log(
+              "Database error:",
+              await dbResponse.text()
+            );
+
+          }
+
+
+          message.innerText =
+            "🎉 ছবি সফলভাবে পোস্ট হয়েছে!";
+
+
+          selectedFile = null;
+
+          photoInput.value = "";
+
+          preview.src = "";
+
+          preview.style.display = "none";
+
+          postButton.disabled = false;
+
+
+          await loadPosts();
+
+
+        } catch (error) {
+
+          console.log(
+            "Upload error:",
+            error
+          );
+
+
+          message.innerText =
+            "❌ আপলোড হয়নি";
+
+
+          postButton.disabled = false;
+
+        }
+
+      }
+    );
+
+
+    /* =========================
+       ওয়েবসাইট চালু হলে
+    ========================= */
+
+    loadPosts();
+
+  </script>
 
 </body>
 </html>
