@@ -52,9 +52,7 @@ body{
   box-shadow:0 8px 30px #000;
 }
 
-.card{
-  text-align:center;
-}
+.card{text-align:center}
 
 .card h1{
   color:#f5d76e;
@@ -494,380 +492,571 @@ let viewerImages = [];
 
 let viewerIndex = 0;
 
-let adminAccessToken = null;
+
+/* =====================================
+   ADMIN SESSION
+===================================== */
+
+let adminAccessToken =
+localStorage.getItem(
+  "picture_chat_admin_access_token"
+) || null;
+
+let adminRefreshToken =
+localStorage.getItem(
+  "picture_chat_admin_refresh_token"
+) || null;
 
 
-/* =========================
+/* =====================================
+   SAVE ADMIN SESSION
+===================================== */
+
+function saveAdminSession(data){
+
+  adminAccessToken =
+  data.access_token || null;
+
+  adminRefreshToken =
+  data.refresh_token || adminRefreshToken || null;
+
+  if(adminAccessToken){
+
+    localStorage.setItem(
+      "picture_chat_admin_access_token",
+      adminAccessToken
+    );
+
+  }
+
+  if(adminRefreshToken){
+
+    localStorage.setItem(
+      "picture_chat_admin_refresh_token",
+      adminRefreshToken
+    );
+
+  }
+
+}
+
+
+/* =====================================
+   CLEAR ADMIN SESSION
+===================================== */
+
+function clearAdminSession(){
+
+  adminAccessToken = null;
+  adminRefreshToken = null;
+
+  localStorage.removeItem(
+    "picture_chat_admin_access_token"
+  );
+
+  localStorage.removeItem(
+    "picture_chat_admin_refresh_token"
+  );
+
+}
+
+
+/* =====================================
+   REFRESH SUPABASE SESSION
+===================================== */
+
+async function refreshAdminSession(){
+
+  if(!adminRefreshToken){
+    return false;
+  }
+
+  try{
+
+    const response =
+    await fetch(
+      SUPABASE_URL +
+      "/auth/v1/token?grant_type=refresh_token",
+      {
+        method:"POST",
+
+        headers:{
+          "apikey":SUPABASE_KEY,
+          "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+          refresh_token:
+          adminRefreshToken
+        })
+      }
+    );
+
+    const data =
+    await response.json();
+
+    if(!response.ok){
+
+      clearAdminSession();
+
+      return false;
+    }
+
+    if(!data.user ||
+       data.user.id !== ADMIN_UID){
+
+      clearAdminSession();
+
+      return false;
+    }
+
+    saveAdminSession(data);
+
+    return true;
+
+  }catch(error){
+
+    console.log(
+      "Session refresh error:",
+      error
+    );
+
+    return false;
+  }
+
+}
+
+
+/* =====================================
+   SHOW ADMIN UI
+===================================== */
+
+function showAdminUI(){
+
+  adminStatus.innerText =
+  "✅ Admin Login চালু আছে।";
+
+  adminStatus.style.color =
+  "#7cff9b";
+
+  adminLoginButton.style.display =
+  "none";
+
+  adminLogoutButton.style.display =
+  "block";
+
+  document
+  .querySelectorAll(".deletePhoto")
+  .forEach(btn=>{
+    btn.style.display="block";
+  });
+
+  document
+  .querySelectorAll(".deleteComment")
+  .forEach(btn=>{
+    btn.style.display="block";
+  });
+
+}
+
+
+/* =====================================
+   HIDE ADMIN UI
+===================================== */
+
+function hideAdminUI(){
+
+  adminStatus.innerText =
+  "Admin লগইন করা নেই।";
+
+  adminStatus.style.color =
+  "#aaa";
+
+  adminLoginButton.style.display =
+  "block";
+
+  adminLogoutButton.style.display =
+  "none";
+
+  document
+  .querySelectorAll(".deletePhoto")
+  .forEach(btn=>{
+    btn.style.display="none";
+  });
+
+  document
+  .querySelectorAll(".deleteComment")
+  .forEach(btn=>{
+    btn.style.display="none";
+  });
+
+}
+
+
+/* =====================================
+   CHECK SAVED LOGIN
+===================================== */
+
+async function restoreAdminSession(){
+
+  if(adminAccessToken){
+
+    try{
+
+      const response =
+      await fetch(
+        SUPABASE_URL +
+        "/auth/v1/user",
+        {
+          headers:{
+            "apikey":SUPABASE_KEY,
+            "Authorization":
+            "Bearer " +
+            adminAccessToken
+          }
+        }
+      );
+
+      if(response.ok){
+
+        const user =
+        await response.json();
+
+        if(user.id === ADMIN_UID){
+
+          showAdminUI();
+
+          return true;
+        }
+
+      }
+
+    }catch(error){
+
+      console.log(
+        "Saved session check:",
+        error
+      );
+
+    }
+
+  }
+
+  if(await refreshAdminSession()){
+
+    showAdminUI();
+
+    return true;
+  }
+
+  hideAdminUI();
+
+  return false;
+
+}
+
+
+/* =====================================
    GUEST NAME
-========================= */
+===================================== */
 
 function getGuestName(){
 
- let name =
- localStorage.getItem(
-   "picture_chat_guest_name"
- );
+  let name =
+  localStorage.getItem(
+    "picture_chat_guest_name"
+  );
 
- if(!name){
+  if(!name){
 
-   name =
-   "Guest-" +
-   Math.floor(
-     1000 +
-     Math.random()*9000
-   );
+    name =
+    "Guest-" +
+    Math.floor(
+      1000 +
+      Math.random()*9000
+    );
 
-   localStorage.setItem(
-     "picture_chat_guest_name",
-     name
-   );
+    localStorage.setItem(
+      "picture_chat_guest_name",
+      name
+    );
 
- }
+  }
 
- return name;
-
+  return name;
 }
 
 
-/* =========================
+/* =====================================
    TIME
-========================= */
+===================================== */
 
 function formatTime(dateString){
 
- const date =
- new Date(dateString);
+  const date =
+  new Date(dateString);
 
- const now =
- new Date();
+  const now =
+  new Date();
 
- const seconds =
- Math.floor(
-   (now-date)/1000
- );
+  const seconds =
+  Math.floor(
+    (now-date)/1000
+  );
 
- if(seconds<60)
- return "এইমাত্র";
+  if(seconds<60)
+    return "এইমাত্র";
 
- const minutes =
- Math.floor(seconds/60);
+  const minutes =
+  Math.floor(seconds/60);
 
- if(minutes<60)
- return minutes+" মিনিট আগে";
+  if(minutes<60)
+    return minutes+" মিনিট আগে";
 
- const hours =
- Math.floor(minutes/60);
+  const hours =
+  Math.floor(minutes/60);
 
- if(hours<24)
- return hours+" ঘণ্টা আগে";
+  if(hours<24)
+    return hours+" ঘণ্টা আগে";
 
- const days =
- Math.floor(hours/24);
+  const days =
+  Math.floor(hours/24);
 
- if(days<7)
- return days+" দিন আগে";
+  if(days<7)
+    return days+" দিন আগে";
 
- return date.toLocaleDateString(
-   "bn-BD"
- );
-
+  return date.toLocaleDateString(
+    "bn-BD"
+  );
 }
 
 
-/* =========================
+/* =====================================
    ADMIN LOGIN
-========================= */
+===================================== */
 
 adminLoginButton.onclick =
 async function(){
 
- const email =
- adminEmail.value.trim();
+  const email =
+  adminEmail.value.trim();
 
- const password =
- adminPassword.value;
+  const password =
+  adminPassword.value;
 
- if(!email || !password){
+  if(!email || !password){
 
-   adminStatus.innerText =
-   "⚠️ Email এবং Password দিন।";
+    adminStatus.innerText =
+    "⚠️ Email এবং Password দিন।";
 
-   return;
+    return;
+  }
 
- }
+  adminLoginButton.disabled =
+  true;
 
- adminLoginButton.disabled =
- true;
+  adminLoginButton.innerText =
+  "⏳ Login হচ্ছে...";
 
- adminLoginButton.innerText =
- "⏳ Login হচ্ছে...";
+  try{
 
+    const response =
+    await fetch(
+      SUPABASE_URL +
+      "/auth/v1/token?grant_type=password",
+      {
+        method:"POST",
 
- try{
+        headers:{
+          "apikey":SUPABASE_KEY,
+          "Content-Type":
+          "application/json"
+        },
 
-   const response =
-   await fetch(
-     SUPABASE_URL +
-     "/auth/v1/token?grant_type=password",
-     {
+        body:JSON.stringify({
+          email:email,
+          password:password
+        })
+      }
+    );
 
-       method:"POST",
+    const data =
+    await response.json();
 
-       headers:{
-         "apikey":
-         SUPABASE_KEY,
+    if(!response.ok){
 
-         "Content-Type":
-         "application/json"
-       },
+      throw new Error(
+        data.error_description ||
+        data.msg ||
+        "Login failed"
+      );
 
-       body:JSON.stringify({
-         email:email,
-         password:password
-       })
+    }
 
-     }
-   );
+    if(
+      !data.user ||
+      data.user.id !== ADMIN_UID
+    ){
 
+      throw new Error(
+        "এই Email Admin নয়।"
+      );
 
-   const data =
-   await response.json();
+    }
 
+    saveAdminSession(data);
 
-   if(!response.ok){
+    adminEmail.value="";
+    adminPassword.value="";
 
-     throw new Error(
-       data.error_description ||
-       data.msg ||
-       "Login failed"
-     );
+    showAdminUI();
 
-   }
+  }catch(error){
 
+    console.log(
+      "Admin login error:",
+      error
+    );
 
-   if(data.user.id !== ADMIN_UID){
+    adminStatus.innerText =
+    "❌ Login হয়নি: " +
+    error.message;
 
-     throw new Error(
-       "এই Email Admin নয়।"
-     );
+    adminStatus.style.color =
+    "#ff7777";
 
-   }
+  }finally{
 
+    adminLoginButton.disabled =
+    false;
 
-   adminAccessToken =
-   data.access_token;
+    adminLoginButton.innerText =
+    "🔐 Admin Login";
 
-
-   adminEmail.value =
-   "";
-
-   adminPassword.value =
-   "";
-
-
-   adminStatus.innerText =
-   "✅ Admin Login সফল হয়েছে।";
-
-
-   adminStatus.style.color =
-   "#7cff9b";
-
-
-   adminLoginButton.style.display =
-   "none";
-
-
-   adminLogoutButton.style.display =
-   "block";
-
-
-   document
-   .querySelectorAll(".deletePhoto")
-   .forEach(btn=>{
-     btn.style.display="block";
-   });
-
-
-   document
-   .querySelectorAll(".deleteComment")
-   .forEach(btn=>{
-     btn.style.display="block";
-   });
-
-
- }catch(error){
-
-   console.log(
-     "Admin login error:",
-     error
-   );
-
-
-   adminStatus.innerText =
-   "❌ Login হয়নি: " +
-   error.message;
-
- }finally{
-
-   adminLoginButton.disabled =
-   false;
-
-   adminLoginButton.innerText =
-   "🔐 Admin Login";
-
- }
+  }
 
 };
 
 
-/* =========================
+/* =====================================
    ADMIN LOGOUT
-========================= */
+===================================== */
 
 adminLogoutButton.onclick =
 function(){
 
- adminAccessToken =
- null;
+  clearAdminSession();
 
- adminStatus.innerText =
- "Admin লগইন করা নেই।";
-
- adminStatus.style.color =
- "#aaa";
-
- adminLoginButton.style.display =
- "block";
-
- adminLogoutButton.style.display =
- "none";
-
-
- document
- .querySelectorAll(".deletePhoto")
- .forEach(btn=>{
-   btn.style.display="none";
- });
-
-
- document
- .querySelectorAll(".deleteComment")
- .forEach(btn=>{
-   btn.style.display="none";
- });
+  hideAdminUI();
 
 };
 
 
-/* =========================
+/* =====================================
    PREVIEW
-========================= */
+===================================== */
 
 photoInput.onchange =
 function(){
 
- const file =
- this.files[0];
+  const file =
+  this.files[0];
 
- if(!file)
- return;
+  if(!file)
+    return;
 
- selectedFile =
- file;
+  selectedFile =
+  file;
 
- const reader =
- new FileReader();
+  const reader =
+  new FileReader();
 
- reader.onload =
- function(e){
+  reader.onload =
+  function(e){
 
-   preview.src =
-   e.target.result;
+    preview.src =
+    e.target.result;
 
-   preview.style.display =
-   "block";
+    preview.style.display =
+    "block";
 
-   message.innerText =
-   "✅ ছবি প্রস্তুত। এখন পোস্ট করুন।";
+    message.innerText =
+    "✅ ছবি প্রস্তুত। এখন পোস্ট করুন।";
 
- };
+  };
 
- reader.readAsDataURL(file);
+  reader.readAsDataURL(file);
 
 };
 
 
-/* =========================
+/* =====================================
    FULLSCREEN
-========================= */
+===================================== */
 
 function openViewer(index){
 
- viewerIndex =
- index;
+  viewerIndex =
+  index;
 
- viewerImage.src =
- viewerImages[
-   viewerIndex
- ];
+  viewerImage.src =
+  viewerImages[
+    viewerIndex
+  ];
 
- imageViewer.classList.add(
-   "active"
- );
+  imageViewer.classList.add(
+    "active"
+  );
 
- document.body.style.overflow =
- "hidden";
-
+  document.body.style.overflow =
+  "hidden";
 }
 
 
 function closeImageViewer(){
 
- imageViewer.classList.remove(
-   "active"
- );
+  imageViewer.classList.remove(
+    "active"
+  );
 
- document.body.style.overflow =
- "";
+  document.body.style.overflow =
+  "";
 
- viewerImage.src =
- "";
-
+  viewerImage.src =
+  "";
 }
 
 
 function showNext(){
 
- if(!viewerImages.length)
- return;
+  if(!viewerImages.length)
+    return;
 
- viewerIndex =
- (viewerIndex+1) %
- viewerImages.length;
+  viewerIndex =
+  (viewerIndex+1) %
+  viewerImages.length;
 
- viewerImage.src =
- viewerImages[
-   viewerIndex
- ];
-
+  viewerImage.src =
+  viewerImages[
+    viewerIndex
+  ];
 }
 
 
 function showPrev(){
 
- if(!viewerImages.length)
- return;
+  if(!viewerImages.length)
+    return;
 
- viewerIndex =
- (viewerIndex-1+
- viewerImages.length) %
- viewerImages.length;
+  viewerIndex =
+  (viewerIndex-1+
+  viewerImages.length) %
+  viewerImages.length;
 
- viewerImage.src =
- viewerImages[
-   viewerIndex
- ];
-
+  viewerImage.src =
+  viewerImages[
+    viewerIndex
+  ];
 }
 
 
@@ -884,11 +1073,11 @@ showPrev;
 imageViewer.onclick =
 function(e){
 
- if(e.target === imageViewer){
+  if(e.target === imageViewer){
 
-   closeImageViewer();
+    closeImageViewer();
 
- }
+  }
 
 };
 
@@ -896,1228 +1085,1218 @@ function(e){
 document.onkeydown =
 function(e){
 
- if(e.key==="Escape")
- closeImageViewer();
+  if(e.key==="Escape")
+    closeImageViewer();
 
- if(e.key==="ArrowRight")
- showNext();
+  if(e.key==="ArrowRight")
+    showNext();
 
- if(e.key==="ArrowLeft")
- showPrev();
+  if(e.key==="ArrowLeft")
+    showPrev();
 
 };
 
 
-/* =========================
+/* =====================================
    DELETE PHOTO
-========================= */
+===================================== */
 
 async function deletePhoto(
- fileName,
- post
+  fileName,
+  post
 ){
 
- if(!adminAccessToken){
+  if(!adminAccessToken){
 
-   alert(
-     "🔐 আগে Admin Login করুন।"
-   );
+    const refreshed =
+    await refreshAdminSession();
 
-   return;
+    if(!refreshed){
 
- }
+      alert(
+        "🔐 Admin Login প্রয়োজন।"
+      );
 
+      return;
+    }
 
- if(!confirm(
-   "এই ছবিটি কি মুছে ফেলবেন?"
- )) return;
+    showAdminUI();
+  }
 
+  if(!confirm(
+    "এই ছবিটি কি মুছে ফেলবেন?"
+  ))
+    return;
 
- try{
+  try{
 
-   const response =
-   await fetch(
-     SUPABASE_URL +
-     "/storage/v1/object/" +
-     BUCKET +
-     "/" +
-     encodeURIComponent(
-       fileName
-     ),
-     {
+    const response =
+    await fetch(
+      SUPABASE_URL +
+      "/storage/v1/object/" +
+      BUCKET +
+      "/" +
+      encodeURIComponent(
+        fileName
+      ),
+      {
+        method:"DELETE",
 
-       method:"DELETE",
+        headers:{
+          "apikey":SUPABASE_KEY,
+          "Authorization":
+          "Bearer " +
+          adminAccessToken
+        }
+      }
+    );
 
-       headers:{
-         "apikey":
-         SUPABASE_KEY,
+    if(
+      response.status === 401
+    ){
 
-         "Authorization":
-         "Bearer " +
-         adminAccessToken
-       }
+      if(
+        await refreshAdminSession()
+      ){
 
-     }
-   );
+        return deletePhoto(
+          fileName,
+          post
+        );
 
+      }
 
-   if(!response.ok){
+    }
 
-     throw new Error(
-       await response.text()
-     );
+    if(!response.ok){
 
-   }
+      throw new Error(
+        await response.text()
+      );
 
-
-   /* Delete photo database row */
-
-   const photoDb =
-   await fetch(
-     SUPABASE_URL +
-     "/rest/v1/photo_posts" +
-     "?file_name=eq." +
-     encodeURIComponent(
-       fileName
-     ),
-     {
-
-       method:"DELETE",
-
-       headers:{
-         "apikey":
-         SUPABASE_KEY,
-
-         "Authorization":
-         "Bearer " +
-         adminAccessToken,
-
-         "Prefer":
-         "return=minimal"
-       }
-
-     }
-   );
+    }
 
 
-   if(!photoDb.ok){
+    await fetch(
+      SUPABASE_URL +
+      "/rest/v1/photo_posts" +
+      "?file_name=eq." +
+      encodeURIComponent(
+        fileName
+      ),
+      {
+        method:"DELETE",
 
-     console.log(
-       "Photo database delete:",
-       await photoDb.text()
-     );
+        headers:{
+          "apikey":SUPABASE_KEY,
 
-   }
+          "Authorization":
+          "Bearer " +
+          adminAccessToken,
 
-
-   /* Delete comments */
-
-   const commentDb =
-   await fetch(
-     SUPABASE_URL +
-     "/rest/v1/photo_comments" +
-     "?file_name=eq." +
-     encodeURIComponent(
-       fileName
-     ),
-     {
-
-       method:"DELETE",
-
-       headers:{
-         "apikey":
-         SUPABASE_KEY,
-
-         "Authorization":
-         "Bearer " +
-         adminAccessToken,
-
-         "Prefer":
-         "return=minimal"
-       }
-
-     }
-   );
+          "Prefer":
+          "return=minimal"
+        }
+      }
+    );
 
 
-   if(!commentDb.ok){
+    await fetch(
+      SUPABASE_URL +
+      "/rest/v1/photo_comments" +
+      "?file_name=eq." +
+      encodeURIComponent(
+        fileName
+      ),
+      {
+        method:"DELETE",
 
-     console.log(
-       "Comment delete:",
-       await commentDb.text()
-     );
+        headers:{
+          "apikey":SUPABASE_KEY,
 
-   }
+          "Authorization":
+          "Bearer " +
+          adminAccessToken,
 
-
-   post.remove();
-
-
-   alert(
-     "✅ ছবি সফলভাবে মুছে গেছে।"
-   );
-
-
- }catch(error){
-
-   console.log(
-     "Delete photo error:",
-     error
-   );
+          "Prefer":
+          "return=minimal"
+        }
+      }
+    );
 
 
-   alert(
-     "❌ ছবি মুছতে সমস্যা হয়েছে।"
-   );
+    post.remove();
 
- }
+    alert(
+      "✅ ছবি সফলভাবে মুছে গেছে।"
+    );
+
+  }catch(error){
+
+    console.log(
+      "Delete photo error:",
+      error
+    );
+
+    alert(
+      "❌ ছবি মুছতে সমস্যা হয়েছে।"
+    );
+
+  }
 
 }
 
 
-/* =========================
+/* =====================================
    DELETE COMMENT
-========================= */
+===================================== */
 
 async function deleteComment(
- id,
- commentItem
+  id,
+  commentItem
 ){
 
- if(!adminAccessToken){
+  if(!adminAccessToken){
 
-   alert(
-     "🔐 আগে Admin Login করুন।"
-   );
+    const refreshed =
+    await refreshAdminSession();
 
-   return;
+    if(!refreshed){
 
- }
+      alert(
+        "🔐 Admin Login প্রয়োজন।"
+      );
 
+      return;
+    }
 
- if(!confirm(
-   "এই Comment মুছে ফেলবেন?"
- )) return;
+    showAdminUI();
+  }
 
+  if(!confirm(
+    "এই Comment মুছে ফেলবেন?"
+  ))
+    return;
 
- try{
+  try{
 
-   const response =
-   await fetch(
-     SUPABASE_URL +
-     "/rest/v1/photo_comments" +
-     "?id=eq." +
-     encodeURIComponent(id),
-     {
+    const response =
+    await fetch(
+      SUPABASE_URL +
+      "/rest/v1/photo_comments" +
+      "?id=eq." +
+      encodeURIComponent(id),
+      {
+        method:"DELETE",
 
-       method:"DELETE",
+        headers:{
+          "apikey":SUPABASE_KEY,
 
-       headers:{
-         "apikey":
-         SUPABASE_KEY,
+          "Authorization":
+          "Bearer " +
+          adminAccessToken,
 
-         "Authorization":
-         "Bearer " +
-         adminAccessToken,
-
-         "Prefer":
-         "return=minimal"
-       }
-
-     }
-   );
-
-
-   if(!response.ok){
-
-     throw new Error(
-       await response.text()
-     );
-
-   }
+          "Prefer":
+          "return=minimal"
+        }
+      }
+    );
 
 
-   commentItem.remove();
+    if(
+      response.status === 401
+    ){
+
+      if(
+        await refreshAdminSession()
+      ){
+
+        return deleteComment(
+          id,
+          commentItem
+        );
+
+      }
+
+    }
 
 
- }catch(error){
+    if(!response.ok){
 
-   console.log(
-     "Delete comment error:",
-     error
-   );
+      throw new Error(
+        await response.text()
+      );
+
+    }
 
 
-   alert(
-     "❌ Comment মুছতে সমস্যা হয়েছে।"
-   );
+    commentItem.remove();
 
- }
+  }catch(error){
+
+    console.log(
+      "Delete comment error:",
+      error
+    );
+
+    alert(
+      "❌ Comment মুছতে সমস্যা হয়েছে।"
+    );
+
+  }
 
 }
 
 
-/* =========================
+/* =====================================
    LOAD COMMENTS
-========================= */
+===================================== */
 
 async function loadComments(
- fileName,
- commentsList
+  fileName,
+  commentsList
 ){
 
- commentsList.innerHTML =
- "<div class='noComments'>⏳ Comment লোড হচ্ছে...</div>";
+  commentsList.innerHTML =
+  "<div class='noComments'>⏳ Comment লোড হচ্ছে...</div>";
 
+  try{
 
- try{
+    const response =
+    await fetch(
+      SUPABASE_URL +
+      "/rest/v1/photo_comments" +
+      "?select=id,comment,created_at" +
+      "&file_name=eq." +
+      encodeURIComponent(fileName) +
+      "&order=created_at.desc",
+      {
+        headers:{
+          "apikey":SUPABASE_KEY,
 
-   const response =
-   await fetch(
-     SUPABASE_URL +
-     "/rest/v1/photo_comments" +
-     "?select=id,comment,created_at" +
-     "&file_name=eq." +
-     encodeURIComponent(fileName) +
-     "&order=created_at.desc",
-     {
+          "Authorization":
+          "Bearer " +
+          SUPABASE_KEY
+        }
+      }
+    );
 
-       headers:{
-         "apikey":
-         SUPABASE_KEY,
+    if(!response.ok){
 
-         "Authorization":
-         "Bearer " +
-         SUPABASE_KEY
-       }
+      throw new Error(
+        await response.text()
+      );
 
-     }
-   );
+    }
 
+    const comments =
+    await response.json();
 
-   if(!response.ok){
+    commentsList.innerHTML =
+    "";
 
-     throw new Error(
-       await response.text()
-     );
+    if(!comments.length){
 
-   }
+      commentsList.innerHTML =
+      "<div class='noComments'>এখনও কোনো Comment নেই।</div>";
 
+      return;
+    }
 
-   const comments =
-   await response.json();
 
+    comments.forEach(
+    item=>{
 
-   commentsList.innerHTML =
-   "";
+      const div =
+      document.createElement(
+        "div"
+      );
 
+      div.className =
+      "commentItem";
 
-   if(!comments.length){
 
-     commentsList.innerHTML =
-     "<div class='noComments'>এখনও কোনো Comment নেই।</div>";
+      const parts =
+      item.comment.split(
+        "|||"
+      );
 
-     return;
 
-   }
+      const name =
+      parts.length>=2
+      ? parts[0]
+      : "Guest";
 
 
-   comments.forEach(
-   item=>{
+      const text =
+      parts.length>=2
+      ? parts.slice(1).join("|||")
+      : item.comment;
 
-     const div =
-     document.createElement(
-       "div"
-     );
 
-     div.className =
-     "commentItem";
+      const header =
+      document.createElement(
+        "div"
+      );
 
+      header.className =
+      "commentHeader";
 
-     const parts =
-     item.comment.split(
-       "|||"
-     );
 
+      const user =
+      document.createElement(
+        "div"
+      );
 
-     const name =
-     parts.length>=2
-     ? parts[0]
-     : "Guest";
+      user.className =
+      "commentName";
 
+      user.innerText =
+      "👤 " + name;
 
-     const text =
-     parts.length>=2
-     ? parts.slice(1).join("|||")
-     : item.comment;
 
+      const time =
+      document.createElement(
+        "div"
+      );
 
-     const header =
-     document.createElement(
-       "div"
-     );
+      time.className =
+      "commentTime";
 
-     header.className =
-     "commentHeader";
+      time.innerText =
+      formatTime(
+        item.created_at
+      );
 
 
-     const user =
-     document.createElement(
-       "div"
-     );
+      header.appendChild(user);
+      header.appendChild(time);
 
-     user.className =
-     "commentName";
 
-     user.innerText =
-     "👤 " + name;
+      const commentText =
+      document.createElement(
+        "div"
+      );
 
+      commentText.className =
+      "commentText";
 
-     const time =
-     document.createElement(
-       "div"
-     );
+      commentText.innerText =
+      "💬 " + text;
 
-     time.className =
-     "commentTime";
 
-     time.innerText =
-     formatTime(
-       item.created_at
-     );
+      const deleteBtn =
+      document.createElement(
+        "button"
+      );
 
+      deleteBtn.className =
+      "deleteComment";
 
-     header.appendChild(user);
-     header.appendChild(time);
+      deleteBtn.innerText =
+      "🗑️ Delete Comment";
 
 
-     const commentText =
-     document.createElement(
-       "div"
-     );
+      if(!adminAccessToken){
 
-     commentText.className =
-     "commentText";
+        deleteBtn.style.display =
+        "none";
 
-     commentText.innerText =
-     "💬 " + text;
+      }
 
 
-     const deleteBtn =
-     document.createElement(
-       "button"
-     );
+      deleteBtn.onclick =
+      function(){
 
-     deleteBtn.className =
-     "deleteComment";
+        deleteComment(
+          item.id,
+          div
+        );
 
-     deleteBtn.innerText =
-     "🗑️ Delete Comment";
+      };
 
 
-     if(!adminAccessToken){
+      div.appendChild(header);
+      div.appendChild(commentText);
+      div.appendChild(deleteBtn);
 
-       deleteBtn.style.display =
-       "none";
+      commentsList.appendChild(div);
 
-     }
+    });
 
 
-     deleteBtn.onclick =
-     function(){
+  }catch(error){
 
-       deleteComment(
-         item.id,
-         div
-       );
+    console.log(
+      "Comment load error:",
+      error
+    );
 
-     };
+    commentsList.innerHTML =
+    "<div class='noComments'>❌ Comment লোড হয়নি</div>";
 
-
-     div.appendChild(header);
-     div.appendChild(commentText);
-     div.appendChild(deleteBtn);
-
-
-     commentsList.appendChild(div);
-
-   });
-
-
- }catch(error){
-
-   console.log(
-     "Comment load error:",
-     error
-   );
-
-
-   commentsList.innerHTML =
-   "<div class='noComments'>❌ Comment লোড হয়নি</div>";
-
- }
+  }
 
 }
 
 
-/* =========================
+/* =====================================
    LOAD POSTS
-========================= */
+===================================== */
 
 async function loadPosts(){
 
- posts.innerHTML =
- "<p style='text-align:center;color:#aaa'>⏳ ছবি লোড হচ্ছে...</p>";
+  posts.innerHTML =
+  "<p style='text-align:center;color:#aaa'>⏳ ছবি লোড হচ্ছে...</p>";
 
+  try{
 
- try{
+    const response =
+    await fetch(
+      SUPABASE_URL +
+      "/storage/v1/object/list/" +
+      BUCKET,
+      {
+        method:"POST",
 
-   const response =
-   await fetch(
-     SUPABASE_URL +
-     "/storage/v1/object/list/" +
-     BUCKET,
-     {
+        headers:{
+          "apikey":SUPABASE_KEY,
 
-       method:"POST",
+          "Authorization":
+          "Bearer " +
+          SUPABASE_KEY,
 
-       headers:{
-         "apikey":
-         SUPABASE_KEY,
+          "Content-Type":
+          "application/json"
+        },
 
-         "Authorization":
-         "Bearer " +
-         SUPABASE_KEY,
+        body:JSON.stringify({
 
-         "Content-Type":
-         "application/json"
-       },
+          prefix:"",
 
-       body:JSON.stringify({
+          limit:100,
 
-         prefix:"",
+          sortBy:{
+            column:"created_at",
+            order:"desc"
+          }
 
-         limit:100,
+        })
+      }
+    );
 
-         sortBy:{
-           column:"created_at",
-           order:"desc"
-         }
 
-       })
+    if(!response.ok){
 
-     }
-   );
+      throw new Error(
+        await response.text()
+      );
 
+    }
 
-   if(!response.ok){
 
-     throw new Error(
-       await response.text()
-     );
+    const files =
+    await response.json();
 
-   }
 
+    posts.innerHTML =
+    "";
 
-   const files =
-   await response.json();
+    viewerImages =
+    [];
 
 
-   posts.innerHTML =
-   "";
+    const validFiles =
+    files.filter(
+      file=>file.name
+    );
 
-   viewerImages =
-   [];
 
+    validFiles.forEach(
+    file=>{
 
-   const validFiles =
-   files.filter(
-     file=>file.name
-   );
+      viewerImages.push(
 
+        SUPABASE_URL +
+        "/storage/v1/object/public/" +
+        BUCKET +
+        "/" +
+        encodeURIComponent(
+          file.name
+        )
 
-   validFiles.forEach(
-   file=>{
+      );
 
-     viewerImages.push(
+    });
 
-       SUPABASE_URL +
-       "/storage/v1/object/public/" +
-       BUCKET +
-       "/" +
-       encodeURIComponent(
-         file.name
-       )
 
-     );
+    for(
+      let i=0;
+      i<validFiles.length;
+      i++
+    ){
 
-   });
+      const file =
+      validFiles[i];
 
+      const imageUrl =
+      viewerImages[i];
 
-   for(
-     let i=0;
-     i<validFiles.length;
-     i++
-   ){
 
-     const file =
-     validFiles[i];
+      let likes =
+      0;
 
-     const imageUrl =
-     viewerImages[i];
 
+      try{
 
-     let likes =
-     0;
+        const likeResponse =
+        await fetch(
+          SUPABASE_URL +
+          "/rest/v1/photo_posts" +
+          "?select=likes" +
+          "&file_name=eq." +
+          encodeURIComponent(
+            file.name
+          ),
+          {
+            headers:{
+              "apikey":SUPABASE_KEY,
 
+              "Authorization":
+              "Bearer " +
+              SUPABASE_KEY
+            }
+          }
+        );
 
-     try{
 
-       const likeResponse =
-       await fetch(
-         SUPABASE_URL +
-         "/rest/v1/photo_posts" +
-         "?select=likes" +
-         "&file_name=eq." +
-         encodeURIComponent(
-           file.name
-         ),
-         {
+        if(likeResponse.ok){
 
-           headers:{
-             "apikey":
-             SUPABASE_KEY,
+          const data =
+          await likeResponse.json();
 
-             "Authorization":
-             "Bearer " +
-             SUPABASE_KEY
-           }
+          if(data.length){
 
-         }
-       );
+            likes =
+            Number(
+              data[0].likes || 0
+            );
 
+          }
 
-       if(likeResponse.ok){
+        }
 
-         const data =
-         await likeResponse.json();
+      }catch(e){}
 
-         if(data.length){
 
-           likes =
-           Number(
-             data[0].likes || 0
-           );
+      const post =
+      document.createElement(
+        "div"
+      );
 
-         }
+      post.className =
+      "post";
 
-       }
 
-     }catch(e){}
+      const imageWrap =
+      document.createElement(
+        "div"
+      );
 
+      imageWrap.className =
+      "postImageWrap";
 
-     const post =
-     document.createElement(
-       "div"
-     );
 
-     post.className =
-     "post";
+      const image =
+      document.createElement(
+        "img"
+      );
 
+      image.src =
+      imageUrl;
 
-     const imageWrap =
-     document.createElement(
-       "div"
-     );
+      image.alt =
+      "Shared photo";
 
-     imageWrap.className =
-     "postImageWrap";
+      image.loading =
+      "lazy";
 
 
-     const image =
-     document.createElement(
-       "img"
-     );
+      image.onclick =
+      function(){
 
-     image.src =
-     imageUrl;
+        openViewer(i);
 
-     image.alt =
-     "Shared photo";
+      };
 
-     image.loading =
-     "lazy";
 
+      imageWrap.appendChild(
+        image
+      );
 
-     image.onclick =
-     function(){
 
-       openViewer(i);
+      /* DELETE PHOTO */
 
-     };
+      const deletePhotoBtn =
+      document.createElement(
+        "button"
+      );
 
+      deletePhotoBtn.className =
+      "deletePhoto";
 
-     imageWrap.appendChild(
-       image
-     );
+      deletePhotoBtn.innerText =
+      "🗑️ Delete";
 
 
-     /* DELETE PHOTO */
+      if(!adminAccessToken){
 
-     const deletePhotoBtn =
-     document.createElement(
-       "button"
-     );
+        deletePhotoBtn.style.display =
+        "none";
 
-     deletePhotoBtn.className =
-     "deletePhoto";
+      }
 
-     deletePhotoBtn.innerText =
-     "🗑️ Delete";
 
+      deletePhotoBtn.onclick =
+      function(){
 
-     if(!adminAccessToken){
+        deletePhoto(
+          file.name,
+          post
+        );
 
-       deletePhotoBtn.style.display =
-       "none";
+      };
 
-     }
 
+      imageWrap.appendChild(
+        deletePhotoBtn
+      );
 
-     deletePhotoBtn.onclick =
-     function(){
 
-       deletePhoto(
-         file.name,
-         post
-       );
+      /* LIKE */
 
-     };
+      const likeButton =
+      document.createElement(
+        "button"
+      );
 
+      likeButton.className =
+      "likeButton";
 
-     imageWrap.appendChild(
-       deletePhotoBtn
-     );
+      likeButton.innerText =
+      "❤️ Like";
 
 
-     /* LIKE */
+      const likeCount =
+      document.createElement(
+        "div"
+      );
 
-     const likeButton =
-     document.createElement(
-       "button"
-     );
+      likeCount.className =
+      "likeCount";
 
-     likeButton.className =
-     "likeButton";
+      likeCount.innerText =
+      "❤️ " +
+      likes +
+      " Likes";
 
-     likeButton.innerText =
-     "❤️ Like";
 
+      likeButton.onclick =
+      async function(){
 
-     const likeCount =
-     document.createElement(
-       "div"
-     );
+        likeButton.disabled =
+        true;
 
-     likeCount.className =
-     "likeCount";
+        likeButton.innerText =
+        "⏳ Like হচ্ছে...";
 
-     likeCount.innerText =
-     "❤️ " +
-     likes +
-     " Likes";
 
+        try{
 
-     likeButton.onclick =
-     async function(){
+          const r =
+          await fetch(
+            SUPABASE_URL +
+            "/rest/v1/photo_posts" +
+            "?file_name=eq." +
+            encodeURIComponent(
+              file.name
+            ),
+            {
+              method:"PATCH",
 
-       likeButton.disabled =
-       true;
+              headers:{
+                "apikey":SUPABASE_KEY,
 
-       likeButton.innerText =
-       "⏳ Like হচ্ছে...";
+                "Authorization":
+                "Bearer " +
+                SUPABASE_KEY,
 
+                "Content-Type":
+                "application/json"
+              },
 
-       try{
+              body:JSON.stringify({
+                likes:likes+1
+              })
+            }
+          );
 
-         const r =
-         await fetch(
-           SUPABASE_URL +
-           "/rest/v1/photo_posts" +
-           "?file_name=eq." +
-           encodeURIComponent(
-             file.name
-           ),
-           {
 
-             method:"PATCH",
+          if(!r.ok)
+            throw new Error();
 
-             headers:{
-               "apikey":
-               SUPABASE_KEY,
 
-               "Authorization":
-               "Bearer " +
-               SUPABASE_KEY,
+          likes++;
 
-               "Content-Type":
-               "application/json"
-             },
 
-             body:JSON.stringify({
-               likes:likes+1
-             })
+          likeCount.innerText =
+          "❤️ " +
+          likes +
+          " Likes";
 
-           }
-         );
 
+          likeButton.innerText =
+          "❤️ Liked";
 
-         if(!r.ok)
-         throw new Error();
 
+        }catch(e){
 
-         likes++;
+          likeButton.innerText =
+          "❌ আবার চেষ্টা করুন";
 
+        }
 
-         likeCount.innerText =
-         "❤️ " +
-         likes +
-         " Likes";
 
+        setTimeout(
+        function(){
 
-         likeButton.innerText =
-         "❤️ Liked";
+          likeButton.innerText =
+          "❤️ Like";
 
+          likeButton.disabled =
+          false;
 
-       }catch(e){
+        },800);
 
-         likeButton.innerText =
-         "❌ আবার চেষ্টা করুন";
+      };
 
-       }
 
+      /* COMMENT */
 
-       setTimeout(
-       function(){
+      const commentBox =
+      document.createElement(
+        "div"
+      );
 
-         likeButton.innerText =
-         "❤️ Like";
+      commentBox.className =
+      "commentBox";
 
-         likeButton.disabled =
-         false;
 
-       },800);
+      const top =
+      document.createElement(
+        "div"
+      );
 
-     };
+      top.className =
+      "commentTop";
 
 
-     /* COMMENT */
+      const title =
+      document.createElement(
+        "div"
+      );
 
-     const commentBox =
-     document.createElement(
-       "div"
-     );
+      title.className =
+      "commentTitle";
 
-     commentBox.className =
-     "commentBox";
+      title.innerText =
+      "💬 Comments";
 
 
-     const top =
-     document.createElement(
-       "div"
-     );
+      const refresh =
+      document.createElement(
+        "button"
+      );
 
-     top.className =
-     "commentTop";
+      refresh.className =
+      "refreshComments";
 
+      refresh.innerText =
+      "🔄 Refresh";
 
-     const title =
-     document.createElement(
-       "div"
-     );
 
-     title.className =
-     "commentTitle";
+      const input =
+      document.createElement(
+        "textarea"
+      );
 
-     title.innerText =
-     "💬 Comments";
+      input.className =
+      "commentInput";
 
+      input.placeholder =
+      "💬 আপনার Comment লিখুন...";
 
-     const refresh =
-     document.createElement(
-       "button"
-     );
+      input.maxLength =
+      500;
 
-     refresh.className =
-     "refreshComments";
 
-     refresh.innerText =
-     "🔄 Refresh";
+      const commentButton =
+      document.createElement(
+        "button"
+      );
 
+      commentButton.className =
+      "commentButton";
 
-     const input =
-     document.createElement(
-       "textarea"
-     );
+      commentButton.innerText =
+      "💬 Comment করুন";
 
-     input.className =
-     "commentInput";
 
-     input.placeholder =
-     "💬 আপনার Comment লিখুন...";
+      const commentsList =
+      document.createElement(
+        "div"
+      );
 
-     input.maxLength =
-     500;
+      commentsList.className =
+      "commentsList";
 
 
-     const commentButton =
-     document.createElement(
-       "button"
-     );
+      refresh.onclick =
+      function(){
 
-     commentButton.className =
-     "commentButton";
+        loadComments(
+          file.name,
+          commentsList
+        );
 
-     commentButton.innerText =
-     "💬 Comment করুন";
+      };
 
 
-     const commentsList =
-     document.createElement(
-       "div"
-     );
+      commentButton.onclick =
+      async function(){
 
-     commentsList.className =
-     "commentsList";
+        const text =
+        input.value.trim();
 
 
-     refresh.onclick =
-     function(){
+        if(!text)
+          return;
 
-       loadComments(
-         file.name,
-         commentsList
-       );
 
-     };
+        commentButton.disabled =
+        true;
 
+        commentButton.innerText =
+        "⏳ Comment হচ্ছে...";
 
-     commentButton.onclick =
-     async function(){
 
-       const text =
-       input.value.trim();
+        try{
 
+          const saved =
+          getGuestName() +
+          "|||" +
+          text;
 
-       if(!text)
-       return;
 
+          const r =
+          await fetch(
+            SUPABASE_URL +
+            "/rest/v1/photo_comments",
+            {
+              method:"POST",
 
-       commentButton.disabled =
-       true;
+              headers:{
+                "apikey":SUPABASE_KEY,
 
-       commentButton.innerText =
-       "⏳ Comment হচ্ছে...";
+                "Authorization":
+                "Bearer " +
+                SUPABASE_KEY,
 
+                "Content-Type":
+                "application/json"
+              },
 
-       try{
+              body:JSON.stringify({
 
-         const saved =
-         getGuestName() +
-         "|||" +
-         text;
+                file_name:
+                file.name,
 
+                comment:
+                saved
 
-         const r =
-         await fetch(
-           SUPABASE_URL +
-           "/rest/v1/photo_comments",
-           {
+              })
+            }
+          );
 
-             method:"POST",
 
-             headers:{
-               "apikey":
-               SUPABASE_KEY,
+          if(!r.ok)
+            throw new Error();
 
-               "Authorization":
-               "Bearer " +
-               SUPABASE_KEY,
 
-               "Content-Type":
-               "application/json"
-             },
+          input.value =
+          "";
 
-             body:JSON.stringify({
 
-               file_name:
-               file.name,
+          await loadComments(
+            file.name,
+            commentsList
+          );
 
-               comment:
-               saved
 
-             })
+        }catch(e){
 
-           }
-         );
+          alert(
+            "❌ Comment পোস্ট হয়নি"
+          );
 
+        }
 
-         if(!r.ok)
-         throw new Error();
 
+        commentButton.disabled =
+        false;
 
-         input.value =
-         "";
+        commentButton.innerText =
+        "💬 Comment করুন";
 
+      };
 
-         await loadComments(
-           file.name,
-           commentsList
-         );
 
+      input.onkeydown =
+      function(e){
 
-       }catch(e){
+        if(
+          e.key==="Enter" &&
+          !e.shiftKey
+        ){
 
-         alert(
-           "❌ Comment পোস্ট হয়নি"
-         );
+          e.preventDefault();
 
-       }
+          commentButton.click();
 
+        }
 
-       commentButton.disabled =
-       false;
+      };
 
-       commentButton.innerText =
-       "💬 Comment করুন";
 
-     };
+      top.appendChild(title);
+      top.appendChild(refresh);
 
 
-     input.onkeydown =
-     function(e){
+      commentBox.appendChild(top);
+      commentBox.appendChild(input);
+      commentBox.appendChild(commentButton);
+      commentBox.appendChild(commentsList);
 
-       if(
-         e.key==="Enter" &&
-         !e.shiftKey
-       ){
 
-         e.preventDefault();
+      post.appendChild(imageWrap);
+      post.appendChild(likeButton);
+      post.appendChild(likeCount);
+      post.appendChild(commentBox);
 
-         commentButton.click();
 
-       }
+      posts.appendChild(post);
 
-     };
 
+      await loadComments(
+        file.name,
+        commentsList
+      );
 
-     top.appendChild(title);
-     top.appendChild(refresh);
+    }
 
 
-     commentBox.appendChild(top);
-     commentBox.appendChild(input);
-     commentBox.appendChild(commentButton);
-     commentBox.appendChild(commentsList);
+    if(!validFiles.length){
 
+      posts.innerHTML =
+      "<p style='text-align:center;color:#aaa'>এখনও কোনো ছবি নেই।</p>";
 
-     post.appendChild(imageWrap);
-     post.appendChild(likeButton);
-     post.appendChild(likeCount);
-     post.appendChild(commentBox);
+    }
 
 
-     posts.appendChild(post);
+  }catch(error){
 
+    console.log(
+      "Load error:",
+      error
+    );
 
-     await loadComments(
-       file.name,
-       commentsList
-     );
 
-   }
+    posts.innerHTML =
+    "<p style='text-align:center;color:#ff7777'>❌ ছবি লোড হয়নি</p>";
 
-
-   if(!validFiles.length){
-
-     posts.innerHTML =
-     "<p style='text-align:center;color:#aaa'>এখনও কোনো ছবি নেই।</p>";
-
-   }
-
-
- }catch(error){
-
-   console.log(
-     "Load error:",
-     error
-   );
-
-
-   posts.innerHTML =
-   "<p style='text-align:center;color:#ff7777'>❌ ছবি লোড হয়নি</p>";
-
- }
+  }
 
 }
 
 
-/* =========================
+/* =====================================
    UPLOAD
-========================= */
+===================================== */
 
 postButton.onclick =
 async function(){
 
- if(!selectedFile){
+  if(!selectedFile){
 
-   message.innerText =
-   "⚠️ আগে একটি ছবি নির্বাচন করুন।";
+    message.innerText =
+    "⚠️ আগে একটি ছবি নির্বাচন করুন।";
 
-   return;
-
- }
-
-
- postButton.disabled =
- true;
-
- message.innerText =
- "⏳ ছবি আপলোড হচ্ছে...";
+    return;
+  }
 
 
- try{
+  postButton.disabled =
+  true;
 
-   const safeName =
-   selectedFile.name.replace(
-     /[^a-zA-Z0-9._-]/g,
-     "_"
-   );
+  message.innerText =
+  "⏳ ছবি আপলোড হচ্ছে...";
 
 
-   const fileName =
-   Date.now() +
-   "-" +
-   safeName;
+  try{
+
+    const safeName =
+    selectedFile.name.replace(
+      /[^a-zA-Z0-9._-]/g,
+      "_"
+    );
 
 
-   const uploadResponse =
-   await fetch(
-     SUPABASE_URL +
-     "/storage/v1/object/" +
-     BUCKET +
-     "/" +
-     encodeURIComponent(
-       fileName
-     ),
-     {
-
-       method:"POST",
-
-       headers:{
-         "apikey":
-         SUPABASE_KEY,
-
-         "Authorization":
-         "Bearer " +
-         SUPABASE_KEY,
-
-         "Content-Type":
-         selectedFile.type ||
-         "application/octet-stream"
-       },
-
-       body:selectedFile
-
-     }
-   );
+    const fileName =
+    Date.now() +
+    "-" +
+    safeName;
 
 
-   if(!uploadResponse.ok){
+    const uploadResponse =
+    await fetch(
+      SUPABASE_URL +
+      "/storage/v1/object/" +
+      BUCKET +
+      "/" +
+      encodeURIComponent(
+        fileName
+      ),
+      {
+        method:"POST",
 
-     throw new Error(
-       await uploadResponse.text()
-     );
+        headers:{
+          "apikey":SUPABASE_KEY,
 
-   }
+          "Authorization":
+          "Bearer " +
+          SUPABASE_KEY,
 
+          "Content-Type":
+          selectedFile.type ||
+          "application/octet-stream"
+        },
 
-   await fetch(
-     SUPABASE_URL +
-     "/rest/v1/photo_posts",
-     {
-
-       method:"POST",
-
-       headers:{
-         "apikey":
-         SUPABASE_KEY,
-
-         "Authorization":
-         "Bearer " +
-         SUPABASE_KEY,
-
-         "Content-Type":
-         "application/json"
-       },
-
-       body:JSON.stringify({
-
-         file_name:
-         fileName,
-
-         likes:0
-
-       })
-
-     }
-   );
+        body:selectedFile
+      }
+    );
 
 
-   message.innerText =
-   "🎉 ছবি সফলভাবে পোস্ট হয়েছে!";
+    if(!uploadResponse.ok){
+
+      throw new Error(
+        await uploadResponse.text()
+      );
+
+    }
 
 
-   selectedFile =
-   null;
+    const dbResponse =
+    await fetch(
+      SUPABASE_URL +
+      "/rest/v1/photo_posts",
+      {
+        method:"POST",
 
-   photoInput.value =
-   "";
+        headers:{
+          "apikey":SUPABASE_KEY,
 
-   preview.src =
-   "";
+          "Authorization":
+          "Bearer " +
+          SUPABASE_KEY,
 
-   preview.style.display =
-   "none";
+          "Content-Type":
+          "application/json"
+        },
 
+        body:JSON.stringify({
 
-   await loadPosts();
+          file_name:
+          fileName,
 
+          likes:0
 
- }catch(error){
-
-   console.log(
-     "Upload error:",
-     error
-   );
-
-   message.innerText =
-   "❌ আপলোড হয়নি";
-
- }
+        })
+      }
+    );
 
 
- postButton.disabled =
- false;
+    if(!dbResponse.ok){
+
+      console.log(
+        "Photo database error:",
+        await dbResponse.text()
+      );
+
+    }
+
+
+    message.innerText =
+    "🎉 ছবি সফলভাবে পোস্ট হয়েছে!";
+
+
+    selectedFile =
+    null;
+
+    photoInput.value =
+    "";
+
+    preview.src =
+    "";
+
+    preview.style.display =
+    "none";
+
+
+    await loadPosts();
+
+
+  }catch(error){
+
+    console.log(
+      "Upload error:",
+      error
+    );
+
+    message.innerText =
+    "❌ আপলোড হয়নি";
+
+  }
+
+
+  postButton.disabled =
+  false;
 
 };
 
 
-/* =========================
+/* =====================================
    START
-========================= */
+===================================== */
 
-loadPosts();
+async function startApp(){
+
+  await restoreAdminSession();
+
+  await loadPosts();
+
+}
+
+startApp();
 
 </script>
 
