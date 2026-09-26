@@ -14,114 +14,204 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      color: #222;
+      background:
+        radial-gradient(circle at top, #25200f 0%, #0b0b0b 42%, #050505 100%);
+      color: #f5f5f5;
+      min-height: 100vh;
     }
 
+    /* Header */
     .header {
-      background: #0088cc;
-      color: white;
-      padding: 18px;
+      padding: 24px 15px;
       text-align: center;
-      font-size: 24px;
-      font-weight: bold;
+      background: rgba(10, 10, 10, 0.92);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.35);
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(12px);
     }
 
+    .logo {
+      font-size: 28px;
+      font-weight: bold;
+      color: #f5d76e;
+      letter-spacing: 0.5px;
+      text-shadow: 0 0 15px rgba(212, 175, 55, 0.35);
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      color: #aaa;
+      font-size: 13px;
+    }
+
+    /* Main */
     .container {
-      max-width: 600px;
+      max-width: 620px;
       margin: 25px auto;
       padding: 15px;
     }
 
-    .card,
-    .post {
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 3px 12px rgba(0,0,0,0.10);
-    }
-
+    /* Upload Card */
     .card {
-      padding: 22px;
+      background: linear-gradient(145deg, #181818, #0e0e0e);
+      border: 1px solid rgba(212, 175, 55, 0.28);
+      border-radius: 20px;
+      padding: 24px;
       text-align: center;
+      box-shadow:
+        0 10px 35px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255,255,255,0.03);
     }
 
-    h1 {
-      margin-top: 0;
+    .card h1 {
+      margin: 0;
+      color: #f5d76e;
+      font-size: 24px;
+    }
+
+    .card p {
+      color: #aaa;
+      line-height: 1.6;
+    }
+
+    /* File input */
+    .fileBox {
+      margin-top: 18px;
+      padding: 14px;
+      border: 1px dashed rgba(212, 175, 55, 0.55);
+      border-radius: 14px;
+      background: rgba(212, 175, 55, 0.04);
     }
 
     input[type="file"] {
-      max-width: 100%;
-      margin: 10px 0;
+      width: 100%;
+      color: #ddd;
+      font-size: 14px;
     }
 
-    button {
-      border: none;
+    input[type="file"]::file-selector-button {
+      border: 1px solid #c9a227;
+      background: #17130a;
+      color: #f5d76e;
+      padding: 10px 14px;
       border-radius: 10px;
-      padding: 13px 22px;
-      font-size: 16px;
       cursor: pointer;
-      color: white;
+      margin-right: 10px;
     }
 
-    #postButton {
-      background: #0088cc;
-      margin-top: 10px;
-    }
-
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
+    /* Preview */
     #preview {
       display: none;
       width: 100%;
       max-height: 400px;
       object-fit: contain;
-      margin-top: 15px;
-      border-radius: 12px;
+      margin-top: 18px;
+      border-radius: 15px;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      background: #050505;
     }
 
-    #posts {
-      margin-top: 20px;
-    }
-
-    .post {
-      padding: 12px;
-      margin-bottom: 18px;
-    }
-
-    .post img {
+    /* Post button */
+    #postButton {
       width: 100%;
-      max-height: 600px;
-      object-fit: contain;
-      border-radius: 10px;
-      display: block;
-      background: #eee;
+      margin-top: 18px;
+      border: 1px solid #d4af37;
+      border-radius: 13px;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #111;
+      background: linear-gradient(135deg, #f5d76e, #c99a18);
+      box-shadow: 0 5px 20px rgba(212, 175, 55, 0.2);
+      cursor: pointer;
+      transition: 0.2s;
     }
 
-    .likeButton {
-      width: 100%;
-      margin-top: 12px;
-      background: #ff4d6d;
+    #postButton:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 7px 25px rgba(212, 175, 55, 0.3);
     }
 
-    .likeCount {
-      text-align: center;
-      margin-top: 8px;
-      color: #555;
-      font-size: 14px;
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
     }
 
     #message {
       min-height: 24px;
+      margin-bottom: 0;
+      font-size: 14px;
     }
 
+    /* Posts */
+    #posts {
+      margin-top: 25px;
+    }
+
+    .post {
+      background: linear-gradient(145deg, #171717, #0d0d0d);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      border-radius: 18px;
+      padding: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+      overflow: hidden;
+    }
+
+    .post img {
+      width: 100%;
+      max-height: 650px;
+      object-fit: contain;
+      border-radius: 13px;
+      display: block;
+      background: #050505;
+    }
+
+    /* Like */
+    .likeButton {
+      width: 100%;
+      margin-top: 12px;
+      border: 1px solid rgba(212, 175, 55, 0.45);
+      border-radius: 12px;
+      padding: 12px;
+      background: #15120a;
+      color: #f5d76e;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .likeButton:hover {
+      background: #211b0c;
+      border-color: #d4af37;
+    }
+
+    .likeCount {
+      text-align: center;
+      margin-top: 9px;
+      color: #aaa;
+      font-size: 13px;
+    }
+
+    /* Footer */
     .footer {
       text-align: center;
-      color: #888;
-      font-size: 14px;
-      margin: 25px 0;
+      color: #666;
+      font-size: 13px;
+      margin: 30px 0;
+      padding-bottom: 10px;
+    }
+
+    .goldLine {
+      width: 70px;
+      height: 2px;
+      margin: 10px auto 0;
+      background: linear-gradient(90deg, transparent, #d4af37, transparent);
     }
   </style>
 </head>
@@ -129,30 +219,30 @@
 <body>
 
   <div class="header">
-    📸 Picture Chat
+    <div class="logo">📸 Picture Chat</div>
+    <div class="subtitle">Premium Photo Sharing</div>
+    <div class="goldLine"></div>
   </div>
 
   <div class="container">
 
     <div class="card">
 
-      <h1>স্বাগতম ❤️</h1>
+      <h1>✨ স্বাগতম</h1>
 
       <p>
-        এখানে আপনি সহজেই ছবি শেয়ার করতে পারবেন।
+        আপনার ছবি শেয়ার করুন এবং অন্যদের ছবিতে ❤️ Like দিন।
       </p>
 
-      <input
-        type="file"
-        id="photoInput"
-        accept="image/*"
-      >
-
-      <br>
+      <div class="fileBox">
+        <input
+          type="file"
+          id="photoInput"
+          accept="image/*"
+        >
+      </div>
 
       <img id="preview" alt="ছবির প্রিভিউ">
-
-      <br>
 
       <button id="postButton">
         📤 পোস্ট করুন
@@ -165,7 +255,7 @@
     <div id="posts"></div>
 
     <div class="footer">
-      © 2026 Picture Chat
+      🖤 Picture Chat • 2026 ✨
     </div>
 
   </div>
@@ -236,13 +326,13 @@
 
 
     /* =========================
-       Supabase Storage থেকে ছবি আনা
+       ছবি লোড
     ========================= */
 
     async function loadPosts() {
 
       posts.innerHTML =
-        "<p style='text-align:center;'>⏳ ছবি লোড হচ্ছে...</p>";
+        "<p style='text-align:center;color:#aaa;'>⏳ ছবি লোড হচ্ছে...</p>";
 
 
       try {
@@ -296,7 +386,7 @@
         if (!files || files.length === 0) {
 
           posts.innerHTML =
-            "<p style='text-align:center;'>এখনও কোনো ছবি নেই।</p>";
+            "<p style='text-align:center;color:#aaa;'>এখনও কোনো ছবি নেই।</p>";
 
           return;
         }
@@ -320,7 +410,7 @@
           let likes = 0;
 
 
-          /* Database থেকে Like count নেওয়া */
+          /* Like count */
 
           try {
 
@@ -355,8 +445,10 @@
                 likeData.length > 0 &&
                 likeData[0].likes != null
               ) {
+
                 likes =
                   Number(likeData[0].likes);
+
               }
 
             }
@@ -371,7 +463,7 @@
           }
 
 
-          /* Post তৈরি */
+          /* Post */
 
           const post =
             document.createElement("div");
@@ -379,7 +471,7 @@
           post.className = "post";
 
 
-          /* ছবি */
+          /* Image */
 
           const image =
             document.createElement("img");
@@ -465,6 +557,7 @@
                   throw new Error(
                     await updateResponse.text()
                   );
+
                 }
 
 
@@ -519,7 +612,8 @@
 
 
         posts.innerHTML =
-          "<p style='text-align:center;color:red;'>❌ ছবি লোড হয়নি</p>";
+          "<p style='text-align:center;color:#ff6b6b;'>❌ ছবি লোড হয়নি</p>";
+
       }
 
     }
@@ -600,10 +694,11 @@
             throw new Error(
               await uploadResponse.text()
             );
+
           }
 
 
-          /* Database-এ ছবির record তৈরি */
+          /* Database record */
 
           const dbResponse =
             await fetch(
@@ -684,7 +779,7 @@
 
 
     /* =========================
-       ওয়েবসাইট চালু হলে
+       Website start
     ========================= */
 
     loadPosts();
