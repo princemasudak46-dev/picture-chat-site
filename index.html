@@ -198,6 +198,62 @@ button:disabled{
   white-space:pre-wrap;
 }
 
+.reply-button{
+  margin-top:8px;
+  background:#222;
+  color:#d5af37;
+  border:1px solid #4b401f;
+  padding:7px 10px;
+  font-size:12px;
+}
+
+.reply-box{
+  display:flex;
+  gap:7px;
+  margin-top:8px;
+}
+
+.reply-box textarea{
+  margin:0;
+  min-height:40px;
+  padding:9px;
+}
+
+.reply-send{
+  background:#d5af37;
+  padding:8px 12px;
+}
+
+.replies{
+  margin-top:8px;
+  margin-left:15px;
+  border-left:2px solid #3b351d;
+  padding-left:10px;
+}
+
+.reply{
+  background:#181818;
+  border:1px solid #292929;
+  border-radius:9px;
+  padding:8px;
+  margin-top:6px;
+}
+
+.reply-head{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  font-size:12px;
+  color:#aaa;
+}
+
+.reply-text{
+  margin-top:5px;
+  color:#ddd;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+
 .empty{
   text-align:center;
   color:#888;
@@ -256,10 +312,6 @@ button:disabled{
   margin-top:10px;
 }
 
-/* ================================
-   ADMIN LOGIN BUTTON
-================================ */
-
 .admin-login-open{
   display:block;
   margin:auto;
@@ -267,10 +319,6 @@ button:disabled{
   color:#111;
   box-shadow:0 5px 20px rgba(213,175,55,.18);
 }
-
-/* ================================
-   ADMIN LOGIN MODAL
-================================ */
 
 .admin-login-modal{
   position:fixed;
@@ -286,11 +334,7 @@ button:disabled{
 
 .admin-login-panel{
   width:min(430px,100%);
-  background:linear-gradient(
-    145deg,
-    #1b1b1b,
-    #0c0c0c
-  );
+  background:linear-gradient(145deg,#1b1b1b,#0c0c0c);
   border:1px solid #5a4a20;
   border-radius:20px;
   padding:22px;
@@ -329,16 +373,8 @@ button:disabled{
 
 .admin-login-submit{
   width:100%;
-  background:linear-gradient(
-    135deg,
-    #d5af37,
-    #f0cf62
-  );
+  background:linear-gradient(135deg,#d5af37,#f0cf62);
 }
-
-/* ================================
-   ADMIN NOTIFICATION
-================================ */
 
 .admin-top-bar{
   display:flex;
@@ -459,6 +495,14 @@ button:disabled{
   .admin-login-panel{
     padding:20px;
   }
+
+  .reply-box{
+    flex-direction:column;
+  }
+
+  .reply-send{
+    width:100%;
+  }
 }
 </style>
 </head>
@@ -472,16 +516,10 @@ button:disabled{
   <div class="subtitle">Premium Photo Sharing</div>
 </header>
 
-
-<!-- =================================
-     ADMIN AREA
-================================= -->
-
 <div class="card" id="adminCard">
 
   <h2>🔐 Admin</h2>
 
-  <!-- PUBLIC VIEW -->
   <div id="loginArea">
 
     <button
@@ -493,8 +531,6 @@ button:disabled{
 
   </div>
 
-
-  <!-- LOGGED IN ADMIN VIEW -->
   <div id="loggedInArea" class="hidden">
 
     <div class="admin-info">
@@ -526,7 +562,6 @@ button:disabled{
 
     </div>
 
-
     <div
       id="notificationPanel"
       class="notification-panel hidden"
@@ -547,11 +582,6 @@ button:disabled{
   </div>
 
 </div>
-
-
-<!-- =================================
-     ADMIN LOGIN MODAL
-================================= -->
 
 <div
   id="adminLoginModal"
@@ -596,11 +626,6 @@ button:disabled{
 
 </div>
 
-
-<!-- =================================
-     UPLOAD AREA
-================================= -->
-
 <div
   class="card hidden"
   id="uploadCard"
@@ -625,18 +650,12 @@ button:disabled{
 
 </div>
 
-
 <div
   class="status"
   id="publicStatus"
 >
   👀 ছবি দেখুন • ❤️ Like দিন • 💬 Comment করুন
 </div>
-
-
-<!-- =================================
-     PHOTOS
-================================= -->
 
 <div class="card">
 
@@ -653,11 +672,6 @@ button:disabled{
 </div>
 
 </div>
-
-
-<!-- =================================
-     FULLSCREEN
-================================= -->
 
 <div
   id="fullscreen"
@@ -678,7 +692,6 @@ button:disabled{
   >
 
 </div>
-
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -842,7 +855,6 @@ function updateAdminUI(){
       "adminLoginModal"
     );
 
-
   if(isAdmin()){
 
     uploadCard.classList.remove(
@@ -913,7 +925,6 @@ async function restoreAdminSession(){
 
     }
 
-
     const { data, error } =
       await supabaseClient.auth.setSession({
 
@@ -924,7 +935,6 @@ async function restoreAdminSession(){
           refreshToken
 
       });
-
 
     if(
       error ||
@@ -944,7 +954,6 @@ async function restoreAdminSession(){
       return;
 
     }
-
 
     if(
       !data.user ||
@@ -988,12 +997,10 @@ async function loginAdmin(){
       .value
       .trim();
 
-
   const password =
     document.getElementById(
       "adminPassword"
     ).value;
-
 
   if(
     !email ||
@@ -1008,7 +1015,6 @@ async function loginAdmin(){
 
   }
 
-
   try{
 
     const { data, error } =
@@ -1020,7 +1026,6 @@ async function loginAdmin(){
 
         });
 
-
     if(error){
 
       alert(
@@ -1031,7 +1036,6 @@ async function loginAdmin(){
       return;
 
     }
-
 
     if(
       !data.user ||
@@ -1048,7 +1052,6 @@ async function loginAdmin(){
 
     }
 
-
     localStorage.setItem(
       ADMIN_ACCESS_KEY,
       data.session.access_token
@@ -1059,14 +1062,11 @@ async function loginAdmin(){
       data.session.refresh_token
     );
 
-
     updateAdminUI();
-
 
     alert(
       "👑 Admin Login সফল হয়েছে।"
     );
-
 
     loadPhotos();
 
@@ -1116,7 +1116,6 @@ async function loadNotifications(){
 
   if(!isAdmin()) return;
 
-
   try{
 
     const { data, error } =
@@ -1133,7 +1132,6 @@ async function loadNotifications(){
         )
         .limit(50);
 
-
     if(error){
 
       console.error(
@@ -1145,11 +1143,9 @@ async function loadNotifications(){
 
     }
 
-
     renderNotifications(
       data || []
     );
-
 
   }catch(error){
 
@@ -1176,16 +1172,13 @@ function renderNotifications(items){
       "notificationBadge"
     );
 
-
   if(!list || !badge) return;
-
 
   const unread =
     items.filter(
       item =>
         !item.read_status
     ).length;
-
 
   if(unread > 0){
 
@@ -1206,7 +1199,6 @@ function renderNotifications(items){
 
   }
 
-
   if(items.length === 0){
 
     list.innerHTML =
@@ -1216,9 +1208,7 @@ function renderNotifications(items){
 
   }
 
-
   list.innerHTML = "";
-
 
   items.forEach(item => {
 
@@ -1226,7 +1216,6 @@ function renderNotifications(items){
       document.createElement(
         "div"
       );
-
 
     div.className =
       "notification-item" +
@@ -1236,16 +1225,13 @@ function renderNotifications(items){
           : " unread"
       );
 
-
     const name =
       item.user_name ||
       "Guest";
 
-
     const comment =
       item.comment_text ||
       "";
-
 
     const date =
       new Date(
@@ -1253,7 +1239,6 @@ function renderNotifications(items){
       ).toLocaleString(
         "bn-BD"
       );
-
 
     div.innerHTML = `
 
@@ -1275,7 +1260,6 @@ function renderNotifications(items){
 
     `;
 
-
     div.addEventListener(
       "click",
       function(){
@@ -1286,7 +1270,6 @@ function renderNotifications(items){
 
       }
     );
-
 
     list.appendChild(
       div
@@ -1315,19 +1298,16 @@ async function openNotification(item){
         item.id
       );
 
-
   }catch(error){
 
     console.error(error);
 
   }
 
-
   const panel =
     document.getElementById(
       "notificationPanel"
     );
-
 
   if(panel){
 
@@ -1337,13 +1317,11 @@ async function openNotification(item){
 
   }
 
-
   const commentBox =
     document.getElementById(
       "comments-" +
       escapeId(item.file_name)
     );
-
 
   if(commentBox){
 
@@ -1351,11 +1329,9 @@ async function openNotification(item){
       "hidden"
     );
 
-
     await loadComments(
       item.file_name
     );
-
 
     setTimeout(function(){
 
@@ -1374,7 +1350,6 @@ async function openNotification(item){
 
   }
 
-
   loadNotifications();
 
 }
@@ -1391,9 +1366,7 @@ function toggleNotifications(){
       "notificationPanel"
     );
 
-
   if(!panel) return;
-
 
   if(
     panel.classList.contains(
@@ -1433,7 +1406,6 @@ function startNotificationListener(){
 
   }
 
-
   notificationChannel =
     supabaseClient
       .channel(
@@ -1456,15 +1428,12 @@ function startNotificationListener(){
 
           }
 
-
           const item =
             payload.new;
-
 
           showNotificationPopup(
             item
           );
-
 
           loadNotifications();
 
@@ -1511,7 +1480,6 @@ function showNotificationPopup(item){
     item.comment_text ||
     "";
 
-
   alert(
     "🔔 নতুন Comment\n\n" +
     name +
@@ -1538,16 +1506,13 @@ async function uploadPhoto(){
 
   }
 
-
   const fileInput =
     document.getElementById(
       "photoFile"
     );
 
-
   const file =
     fileInput.files[0];
-
 
   if(!file){
 
@@ -1559,16 +1524,13 @@ async function uploadPhoto(){
 
   }
 
-
   const status =
     document.getElementById(
       "uploadStatus"
     );
 
-
   status.textContent =
     "ছবি আপলোড হচ্ছে...";
-
 
   try{
 
@@ -1584,10 +1546,8 @@ async function uploadPhoto(){
         "jpg"
       );
 
-
     const path =
       fileName;
-
 
     const { error: uploadError } =
       await supabaseClient.storage
@@ -1601,13 +1561,11 @@ async function uploadPhoto(){
           }
         );
 
-
     if(uploadError){
 
       throw uploadError;
 
     }
-
 
     const { error: insertError } =
       await supabaseClient
@@ -1624,7 +1582,6 @@ async function uploadPhoto(){
 
         });
 
-
     if(insertError){
 
       await supabaseClient
@@ -1636,13 +1593,10 @@ async function uploadPhoto(){
 
     }
 
-
     status.textContent =
       "✅ ছবি সফলভাবে পোস্ট হয়েছে।";
 
-
     fileInput.value = "";
-
 
     await loadPhotos();
 
@@ -1651,8 +1605,7 @@ async function uploadPhoto(){
     console.error(error);
 
     status.textContent =
-      "❌ আপলোড ব্যর্থ হয়েছে。";
-
+      "❌ আপলোড ব্যর্থ হয়েছে।";
 
     alert(
       error.message ||
@@ -1675,10 +1628,8 @@ async function loadPhotos(){
       "photos"
     );
 
-
   photos.innerHTML =
     '<div class="empty">ছবি লোড হচ্ছে...</div>';
-
 
   try{
 
@@ -1695,13 +1646,11 @@ async function loadPhotos(){
           }
         );
 
-
     if(error){
 
       throw error;
 
     }
-
 
     if(
       !data ||
@@ -1715,16 +1664,13 @@ async function loadPhotos(){
 
     }
 
-
     photos.innerHTML = "";
-
 
     data.forEach(post => {
 
       renderPhoto(post);
 
     });
-
 
   }catch(error){
 
@@ -1749,7 +1695,6 @@ function renderPhoto(post){
       "photos"
     );
 
-
   const publicUrl =
     SUPABASE_URL +
     "/storage/v1/object/public/photos/" +
@@ -1757,27 +1702,22 @@ function renderPhoto(post){
       post.file_name
     );
 
-
   const card =
     document.createElement(
       "div"
     );
 
-
   card.className =
     "photo-card card";
-
 
   const admin =
     post.user_id === ADMIN_UID ||
     post.user_name === "Admin";
 
-
   const liked =
     localStorage.getItem(
       likeKey(post.file_name)
     ) === "1";
-
 
   const userText =
     admin
@@ -1788,21 +1728,20 @@ function renderPhoto(post){
           "Guest"
         );
 
-
   card.innerHTML = `
 
     <img
       class="photo"
       src="${publicUrl}"
       alt="Shared Photo"
-      onclick="openFullscreen('${publicUrl}')"
+      onclick="openFullscreen('${escapeJs(publicUrl)}')"
       loading="lazy"
     >
 
     <div class="photo-info">
 
       <div class="user">
-        ${userText}
+        ${escapeHtml(userText)}
       </div>
 
       <div>
@@ -1816,7 +1755,6 @@ function renderPhoto(post){
 
     </div>
 
-
     <div class="actions">
 
       <button
@@ -1828,14 +1766,12 @@ function renderPhoto(post){
         ${liked ? "❤️ Liked" : "❤️ Like"}
       </button>
 
-
       <button
         class="comment-btn"
         onclick="toggleComments('${escapeJs(post.file_name)}')"
       >
         💬 Comment
       </button>
-
 
       ${
         isAdmin()
@@ -1854,7 +1790,6 @@ function renderPhoto(post){
 
     </div>
 
-
     <div
       class="comments hidden"
       id="comments-${escapeId(post.file_name)}"
@@ -1870,14 +1805,12 @@ function renderPhoto(post){
 
       </div>
 
-
       <div class="comment-box">
 
         <textarea
           id="comment-input-${escapeId(post.file_name)}"
           placeholder="কমেন্ট লিখুন..."
         ></textarea>
-
 
         <button
           class="send-btn"
@@ -1891,7 +1824,6 @@ function renderPhoto(post){
     </div>
 
   `;
-
 
   photos.appendChild(card);
 
@@ -1907,7 +1839,6 @@ async function likePost(fileName){
   const key =
     likeKey(fileName);
 
-
   if(
     localStorage.getItem(key) === "1"
   ){
@@ -1920,13 +1851,11 @@ async function likePost(fileName){
 
   }
 
-
   const button =
     document.getElementById(
       "like-btn-" +
       escapeId(fileName)
     );
-
 
   if(button){
 
@@ -1937,12 +1866,10 @@ async function likePost(fileName){
 
   }
 
-
   try{
 
     const guestName =
       getGuestName();
-
 
     const { data, error } =
       await supabaseClient.rpc(
@@ -1953,19 +1880,16 @@ async function likePost(fileName){
         }
       );
 
-
     if(error){
 
       throw error;
 
     }
 
-
     localStorage.setItem(
       key,
       "1"
     );
-
 
     const likeCount =
       document.getElementById(
@@ -1973,14 +1897,12 @@ async function likePost(fileName){
         escapeId(fileName)
       );
 
-
     if(likeCount){
 
       likeCount.textContent =
         data || 0;
 
     }
-
 
     if(button){
 
@@ -1999,7 +1921,6 @@ async function likePost(fileName){
 
     console.error(error);
 
-
     if(button){
 
       button.disabled = false;
@@ -2008,7 +1929,6 @@ async function likePost(fileName){
         "❤️ Like";
 
     }
-
 
     alert(
       error.message ||
@@ -2032,22 +1952,18 @@ async function toggleComments(fileName){
       escapeId(fileName)
     );
 
-
   if(!box) return;
-
 
   const hidden =
     box.classList.contains(
       "hidden"
     );
 
-
   if(hidden){
 
     box.classList.remove(
       "hidden"
     );
-
 
     await loadComments(
       fileName
@@ -2076,9 +1992,7 @@ async function loadComments(fileName){
       escapeId(fileName)
     );
 
-
   if(!list) return;
-
 
   try{
 
@@ -2099,13 +2013,11 @@ async function loadComments(fileName){
           }
         );
 
-
     if(error){
 
       throw error;
 
     }
-
 
     if(
       !data ||
@@ -2119,29 +2031,23 @@ async function loadComments(fileName){
 
     }
 
-
     list.innerHTML = "";
 
-
-    data.forEach(item => {
+    for(const item of data){
 
       const comment =
         document.createElement(
           "div"
         );
 
-
       comment.className =
         "comment";
-
 
       let text =
         item.comment || "";
 
-
       let name =
         item.user_name || "";
-
 
       if(
         !name &&
@@ -2151,21 +2057,17 @@ async function loadComments(fileName){
         const parts =
           text.split("|||");
 
-
         name =
           parts.shift();
-
 
         text =
           parts.join("|||");
 
       }
 
-
       const isAdminComment =
         item.user_id === ADMIN_UID ||
         name === "Admin";
-
 
       const displayName =
         isAdminComment
@@ -2176,14 +2078,12 @@ async function loadComments(fileName){
               "Guest"
             );
 
-
       const date =
         new Date(
           item.created_at
         ).toLocaleString(
           "bn-BD"
         );
-
 
       comment.innerHTML = `
 
@@ -2199,11 +2099,44 @@ async function loadComments(fileName){
 
         </div>
 
-
         <div class="comment-text">
           ${escapeHtml(text)}
         </div>
 
+        <button
+          class="reply-button"
+          onclick="toggleReplyBox('${escapeJs(item.id)}')"
+        >
+          ↩️ Reply
+        </button>
+
+        <div
+          class="reply-box hidden"
+          id="reply-box-${escapeId(item.id)}"
+        >
+
+          <textarea
+            id="reply-input-${escapeId(item.id)}"
+            placeholder="Reply লিখুন..."
+          ></textarea>
+
+          <button
+            class="reply-send"
+            onclick="addReply('${escapeJs(item.id)}','${escapeJs(fileName)}')"
+          >
+            ➤
+          </button>
+
+        </div>
+
+        <div
+          class="replies"
+          id="replies-${escapeId(item.id)}"
+        >
+          <div class="empty" style="padding:8px">
+            Reply লোড হচ্ছে...
+          </div>
+        </div>
 
         ${
           isAdmin()
@@ -2223,21 +2156,347 @@ async function loadComments(fileName){
 
       `;
 
-
       list.appendChild(
         comment
       );
 
-    });
+      await loadReplies(
+        item.id
+      );
 
+    }
 
   }catch(error){
 
     console.error(error);
 
-
     list.innerHTML =
       '<div class="empty">কমেন্ট লোড করা যায়নি।</div>';
+
+  }
+
+}
+
+
+// ================================
+// TOGGLE REPLY BOX
+// ================================
+
+function toggleReplyBox(commentId){
+
+  const box =
+    document.getElementById(
+      "reply-box-" +
+      escapeId(commentId)
+    );
+
+  if(!box) return;
+
+  if(
+    box.classList.contains(
+      "hidden"
+    )
+  ){
+
+    box.classList.remove(
+      "hidden"
+    );
+
+    const input =
+      document.getElementById(
+        "reply-input-" +
+        escapeId(commentId)
+      );
+
+    if(input){
+
+      input.focus();
+
+    }
+
+  }else{
+
+    box.classList.add(
+      "hidden"
+    );
+
+  }
+
+}
+
+
+// ================================
+// LOAD REPLIES
+// ================================
+
+async function loadReplies(commentId){
+
+  const list =
+    document.getElementById(
+      "replies-" +
+      escapeId(commentId)
+    );
+
+  if(!list) return;
+
+  try{
+
+    const { data, error } =
+      await supabaseClient
+        .from("photo_comment_replies")
+        .select(
+          "id,comment_id,user_name,reply_text,created_at"
+        )
+        .eq(
+          "comment_id",
+          commentId
+        )
+        .order(
+          "created_at",
+          {
+            ascending:true
+          }
+        );
+
+    if(error){
+
+      throw error;
+
+    }
+
+    if(
+      !data ||
+      data.length === 0
+    ){
+
+      list.innerHTML = "";
+
+      return;
+
+    }
+
+    list.innerHTML = "";
+
+    data.forEach(reply => {
+
+      const div =
+        document.createElement(
+          "div"
+        );
+
+      div.className =
+        "reply";
+
+      const isAdminReply =
+        reply.user_name === "Admin";
+
+      const displayName =
+        isAdminReply
+          ? "👑 Admin"
+          : "👤 " +
+            (
+              reply.user_name ||
+              "Guest"
+            );
+
+      const date =
+        new Date(
+          reply.created_at
+        ).toLocaleString(
+          "bn-BD"
+        );
+
+      div.innerHTML = `
+
+        <div class="reply-head">
+
+          <strong>
+            ${escapeHtml(displayName)}
+          </strong>
+
+          <span>
+            ${escapeHtml(date)}
+          </span>
+
+        </div>
+
+        <div class="reply-text">
+          ${escapeHtml(reply.reply_text || "")}
+        </div>
+
+        ${
+          isAdmin()
+          ?
+          `
+          <button
+            class="delete-btn"
+            style="margin-top:6px;padding:6px 9px;font-size:11px"
+            onclick="deleteReply('${escapeJs(reply.id)}','${escapeJs(commentId)}')"
+          >
+            🗑️ Delete
+          </button>
+          `
+          :
+          ""
+        }
+
+      `;
+
+      list.appendChild(
+        div
+      );
+
+    });
+
+  }catch(error){
+
+    console.error(error);
+
+    list.innerHTML =
+      '<div class="empty" style="padding:8px">Reply লোড করা যায়নি।</div>';
+
+  }
+
+}
+
+
+// ================================
+// ADD REPLY
+// ================================
+
+async function addReply(
+  commentId,
+  fileName
+){
+
+  const input =
+    document.getElementById(
+      "reply-input-" +
+      escapeId(commentId)
+    );
+
+  if(!input) return;
+
+  const text =
+    input.value.trim();
+
+  if(!text){
+
+    alert(
+      "Reply লিখুন।"
+    );
+
+    return;
+
+  }
+
+  try{
+
+    const admin =
+      isAdmin();
+
+    const userName =
+      admin
+        ? "Admin"
+        : getGuestName();
+
+    const { error } =
+      await supabaseClient
+        .from("photo_comment_replies")
+        .insert({
+
+          comment_id:commentId,
+
+          user_name:userName,
+
+          reply_text:text
+
+        });
+
+    if(error){
+
+      throw error;
+
+    }
+
+    input.value = "";
+
+    await loadReplies(
+      commentId
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      error.message ||
+      "Reply পাঠানো যায়নি।"
+    );
+
+  }
+
+}
+
+
+// ================================
+// DELETE REPLY
+// ================================
+
+async function deleteReply(
+  replyId,
+  commentId
+){
+
+  if(!isAdmin()){
+
+    alert(
+      "শুধু Admin Reply Delete করতে পারবেন।"
+    );
+
+    return;
+
+  }
+
+  if(
+    !confirm(
+      "এই Replyটি Delete করবেন?"
+    )
+  ){
+
+    return;
+
+  }
+
+  try{
+
+    const { error } =
+      await supabaseClient
+        .from("photo_comment_replies")
+        .delete()
+        .eq(
+          "id",
+          replyId
+        );
+
+    if(error){
+
+      throw error;
+
+    }
+
+    await loadReplies(
+      commentId
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      error.message ||
+      "Reply Delete করা যায়নি।"
+    );
 
   }
 
@@ -2256,13 +2515,10 @@ async function addComment(fileName){
       escapeId(fileName)
     );
 
-
   if(!input) return;
-
 
   const text =
     input.value.trim();
-
 
   if(!text){
 
@@ -2274,16 +2530,13 @@ async function addComment(fileName){
 
   }
 
-
   try{
 
     const admin =
       isAdmin();
 
-
     const guestName =
       getGuestName();
-
 
     const { error } =
       await supabaseClient
@@ -2306,26 +2559,21 @@ async function addComment(fileName){
 
         });
 
-
     if(error){
 
       throw error;
 
     }
 
-
     input.value = "";
-
 
     await loadComments(
       fileName
     );
 
-
   }catch(error){
 
     console.error(error);
-
 
     alert(
       error.message ||
@@ -2356,7 +2604,6 @@ async function deleteComment(
 
   }
 
-
   if(
     !confirm(
       "এই কমেন্টটি Delete করবেন?"
@@ -2366,7 +2613,6 @@ async function deleteComment(
     return;
 
   }
-
 
   try{
 
@@ -2379,23 +2625,19 @@ async function deleteComment(
           commentId
         );
 
-
     if(error){
 
       throw error;
 
     }
 
-
     await loadComments(
       fileName
     );
 
-
   }catch(error){
 
     console.error(error);
-
 
     alert(
       error.message ||
@@ -2423,7 +2665,6 @@ async function deletePhoto(fileName){
 
   }
 
-
   if(
     !confirm(
       "এই ছবিটি Delete করবেন?"
@@ -2434,19 +2675,14 @@ async function deletePhoto(fileName){
 
   }
 
-
   try{
 
-    const { error:
-      storageError
-    } =
-      await supabaseClient
-        .storage
+    const { error:storageError } =
+      await supabaseClient.storage
         .from("photos")
         .remove([
           fileName
         ]);
-
 
     if(storageError){
 
@@ -2454,10 +2690,7 @@ async function deletePhoto(fileName){
 
     }
 
-
-    const { error:
-      commentsError
-    } =
+    const { error:commentsError } =
       await supabaseClient
         .from("photo_comments")
         .delete()
@@ -2466,17 +2699,13 @@ async function deletePhoto(fileName){
           fileName
         );
 
-
     if(commentsError){
 
       throw commentsError;
 
     }
 
-
-    const { error:
-      postError
-    } =
+    const { error:postError } =
       await supabaseClient
         .from("photo_posts")
         .delete()
@@ -2485,26 +2714,21 @@ async function deletePhoto(fileName){
           fileName
         );
 
-
     if(postError){
 
       throw postError;
 
     }
 
-
     localStorage.removeItem(
       likeKey(fileName)
     );
 
-
     await loadPhotos();
-
 
   }catch(error){
 
     console.error(error);
-
 
     alert(
       error.message ||
@@ -2527,15 +2751,12 @@ function openFullscreen(url){
       "fullscreen"
     );
 
-
   const img =
     document.getElementById(
       "fullscreenImage"
     );
 
-
   img.src = url;
-
 
   box.classList.remove(
     "hidden"
