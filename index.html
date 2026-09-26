@@ -453,7 +453,6 @@ document.getElementById("posts");
 const message =
 document.getElementById("message");
 
-
 const imageViewer =
 document.getElementById("imageViewer");
 
@@ -468,7 +467,6 @@ document.getElementById("prevBtn");
 
 const nextBtn =
 document.getElementById("nextBtn");
-
 
 const adminEmail =
 document.getElementById("adminEmail");
@@ -487,9 +485,7 @@ document.getElementById("adminStatus");
 
 
 let selectedFile = null;
-
 let viewerImages = [];
-
 let viewerIndex = 0;
 
 
@@ -509,6 +505,26 @@ localStorage.getItem(
 
 
 /* =====================================
+   GET CURRENT USER ID
+===================================== */
+
+function getCurrentUserId(){
+
+  if(
+    adminAccessToken &&
+    adminAccessToken.length > 0
+  ){
+
+    return ADMIN_UID;
+
+  }
+
+  return null;
+
+}
+
+
+/* =====================================
    SAVE ADMIN SESSION
 ===================================== */
 
@@ -518,7 +534,9 @@ function saveAdminSession(data){
   data.access_token || null;
 
   adminRefreshToken =
-  data.refresh_token || adminRefreshToken || null;
+  data.refresh_token ||
+  adminRefreshToken ||
+  null;
 
   if(adminAccessToken){
 
@@ -602,8 +620,10 @@ async function refreshAdminSession(){
       return false;
     }
 
-    if(!data.user ||
-       data.user.id !== ADMIN_UID){
+    if(
+      !data.user ||
+      data.user.id !== ADMIN_UID
+    ){
 
       clearAdminSession();
 
@@ -1366,7 +1386,7 @@ async function loadComments(
     await fetch(
       SUPABASE_URL +
       "/rest/v1/photo_comments" +
-      "?select=id,comment,created_at" +
+      "?select=id,comment,created_at,user_id" +
       "&file_name=eq." +
       encodeURIComponent(fileName) +
       "&order=created_at.desc",
@@ -1653,7 +1673,7 @@ async function loadPosts(){
         await fetch(
           SUPABASE_URL +
           "/rest/v1/photo_posts" +
-          "?select=likes" +
+          "?select=likes,user_id" +
           "&file_name=eq." +
           encodeURIComponent(
             file.name
@@ -1998,6 +2018,10 @@ async function loadPosts(){
           text;
 
 
+          const currentUserId =
+          getCurrentUserId();
+
+
           const r =
           await fetch(
             SUPABASE_URL +
@@ -2013,7 +2037,10 @@ async function loadPosts(){
                 SUPABASE_KEY,
 
                 "Content-Type":
-                "application/json"
+                "application/json",
+
+                "Prefer":
+                "return=minimal"
               },
 
               body:JSON.stringify({
@@ -2022,7 +2049,10 @@ async function loadPosts(){
                 file.name,
 
                 comment:
-                saved
+                saved,
+
+                user_id:
+                currentUserId
 
               })
             }
@@ -2030,7 +2060,9 @@ async function loadPosts(){
 
 
           if(!r.ok)
-            throw new Error();
+            throw new Error(
+              await r.text()
+            );
 
 
           input.value =
@@ -2044,6 +2076,11 @@ async function loadPosts(){
 
 
         }catch(e){
+
+          console.log(
+            "Comment post error:",
+            e
+          );
 
           alert(
             "❌ Comment পোস্ট হয়নি"
@@ -2205,6 +2242,14 @@ async function(){
     }
 
 
+    /* =====================================
+       USER ID
+    ===================================== */
+
+    const currentUserId =
+    getCurrentUserId();
+
+
     const dbResponse =
     await fetch(
       SUPABASE_URL +
@@ -2220,7 +2265,10 @@ async function(){
           SUPABASE_KEY,
 
           "Content-Type":
-          "application/json"
+          "application/json",
+
+          "Prefer":
+          "return=minimal"
         },
 
         body:JSON.stringify({
@@ -2228,7 +2276,10 @@ async function(){
           file_name:
           fileName,
 
-          likes:0
+          likes:0,
+
+          user_id:
+          currentUserId
 
         })
       }
